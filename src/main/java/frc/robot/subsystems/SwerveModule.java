@@ -16,6 +16,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 
+@SuppressWarnings("removal")
 public class SwerveModule {
     private final SparkMax drivingSparkMax;
     private final SparkMax turningSparkMax;
@@ -53,6 +54,7 @@ public class SwerveModule {
         }
     }
 
+    
     public SwerveModule(int drivingCANId, int turningCANId, double thisChassisAngularOffset) {
         drivingSparkMax = new SparkMax(drivingCANId, MotorType.kBrushless);
         turningSparkMax = new SparkMax(turningCANId, MotorType.kBrushless);
