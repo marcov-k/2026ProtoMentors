@@ -28,8 +28,8 @@ public class DriveSubsystem extends SubsystemBase {
         public static final int kRearLeftTurningCanId = 8;  
 
         // Chassis configuration
-        public static final double kWheelBase = Units.inchesToMeters(26.5);
-        public static final double kTrackWidth = Units.inchesToMeters(26.5);
+        public static final double kWheelBase = Units.inchesToMeters(27.8);
+        public static final double kTrackWidth = Units.inchesToMeters(19.25);
 
         // Driving Parameters 
         public static final double kMaxSpeedMetersPerSecond = 4.8; // Default is 4.8 meters per second     
