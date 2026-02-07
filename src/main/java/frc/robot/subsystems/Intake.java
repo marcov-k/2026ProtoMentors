@@ -14,7 +14,7 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 @SuppressWarnings("removal")
 public class Intake extends SubsystemBase{
 
-    public static SparkMaxConfig DefaultConfig = new SparkMaxConfig();    
+    private static SparkMaxConfig DefaultConfig = new SparkMaxConfig();    
     private SparkMax IntakeMotor;     
     public static final int kIntakeMotorCanID = 9;
 
@@ -30,7 +30,7 @@ public class Intake extends SubsystemBase{
         IntakeMotor.configure(DefaultConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
     }
 
-    public Command intake() {
+    public Command run() {
         return Commands.runOnce(() -> IntakeMotor.set(1));
     }
 
