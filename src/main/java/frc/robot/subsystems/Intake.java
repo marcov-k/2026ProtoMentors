@@ -22,7 +22,7 @@ public class Intake extends SubsystemBase{
         DefaultConfig.smartCurrentLimit(50);
         DefaultConfig.idleMode(IdleMode.kCoast);
         DefaultConfig.openLoopRampRate(1.0);
-        DefaultConfig.inverted(true);
+        DefaultConfig.inverted(false);
     }
 
     public Intake() {
@@ -31,9 +31,13 @@ public class Intake extends SubsystemBase{
     }
 
     public Command run() {
-        return Commands.runOnce(() -> IntakeMotor.set(1));
+        return Commands.runOnce(() -> IntakeMotor.set(1.0));
     }
 
+
+    public Command dump() {
+        return Commands.runOnce(() -> IntakeMotor.set(-1.0));
+    }
     public Command stop() {
         return Commands.runOnce(() -> IntakeMotor.set(0));
     }
