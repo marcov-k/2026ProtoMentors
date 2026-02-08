@@ -16,7 +16,9 @@ public class Launcher extends SubsystemBase{
 
     private static SparkMaxConfig DefaultConfig = new SparkMaxConfig();    
     private SparkMax LaunchMotor;     
-    public static final int kLaunchMotorCanID = 10;
+    private SparkMax HopperMotor;
+    public static final int kHopperMotorCanID = 10;
+    public static final int kLaunchMotorCanID = 11;
 
     static {
         DefaultConfig.smartCurrentLimit(50);
@@ -28,13 +30,20 @@ public class Launcher extends SubsystemBase{
     public Launcher() {
         LaunchMotor = new SparkMax(kLaunchMotorCanID, MotorType.kBrushless);
         LaunchMotor.configure(DefaultConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
+        HopperMotor = new SparkMax(kHopperMotorCanID, MotorType.kBrushless);
+        HopperMotor.configure(DefaultConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
+
     }
 
-    public Command run() {
-        return Commands.runOnce(() -> LaunchMotor.set(1));
+    public Command run() {        
+        return Commands.sequence(
+            Commands.runOnce(() ->  LaunchMotor.set(.75)),
+            Commands.waitSeconds(1.0),
+            Commands.runOnce(() -> HopperMotor.set(.5))
+        );
     }
 
     public Command stop() {
-        return Commands.runOnce(() -> LaunchMotor.set(0));
+        return Commands.runOnce(() -> {HopperMotor.set(0); LaunchMotor.set(0);});
     }
 }
