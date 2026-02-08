@@ -24,6 +24,7 @@ public class RobotContainer {
 
   private void configureBindings() {
     controller.leftTrigger().onTrue(intake.run()).onFalse(intake.stop());
+    controller.leftBumper().onTrue(intake.dump()).onFalse(intake.stop());
     controller.rightTrigger().onTrue(launcher.run()).onFalse(launcher.stop());
   }
 
