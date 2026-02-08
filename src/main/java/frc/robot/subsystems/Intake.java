@@ -39,6 +39,6 @@ public class Intake extends SubsystemBase{
         return Commands.runOnce(() -> IntakeMotor.set(-1.0));
     }
     public Command stop() {
-        return Commands.runOnce(() -> IntakeMotor.set(0));
+        return Commands.runOnce(() -> IntakeMotor.stopMotor());
     }
 }

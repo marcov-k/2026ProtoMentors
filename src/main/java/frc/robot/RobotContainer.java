@@ -26,6 +26,7 @@ public class RobotContainer {
     controller.leftTrigger().onTrue(intake.run()).onFalse(intake.stop());
     controller.leftBumper().onTrue(intake.dump()).onFalse(intake.stop());
     controller.rightTrigger().onTrue(launcher.run()).onFalse(launcher.stop());
+    controller.rightBumper().onTrue(launcher.runAtSpeed(3800)).onFalse(launcher.stop());
   }
 
   public Command getAutonomousCommand() {
