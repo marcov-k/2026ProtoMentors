@@ -95,7 +95,7 @@ public class DriveSubsystem extends SubsystemBase {
         strafe = -strafe * kMaxSpeedMetersPerSecond;
         rotation = -rotation * kMaxAngularSpeed;
 
-        // Grab the current angle from the Gyroscope and invert it.  Swerve expects counter clockwise positive. 
+        // Grab the current angle from the Gyroscope and invert it because ChassisSpeeds expects counter clockwise positive. 
         double currentangle = gyro.getYaw() * -1.0;
 
         // Calculate Swerve Module States
