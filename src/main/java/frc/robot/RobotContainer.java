@@ -19,7 +19,7 @@ public class RobotContainer {
 
   public RobotContainer() {
     configureBindings();
-    CommandScheduler.getInstance().setDefaultCommand(drive, drive.driveCommand(controller, false));
+    CommandScheduler.getInstance().setDefaultCommand(drive, drive.driveCommand(controller, true));
   }
 
   private void configureBindings() {
