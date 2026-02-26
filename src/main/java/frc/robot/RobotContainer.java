@@ -16,10 +16,11 @@ public class RobotContainer {
   public final Intake intake = new Intake();
   public final Launcher launcher = new Launcher();
   private final CommandXboxController controller = new CommandXboxController(0);
+  private Boolean fieldRelative = true;
 
   public RobotContainer() {
     configureBindings();
-    CommandScheduler.getInstance().setDefaultCommand(drive, drive.driveCommand(controller, true));
+    CommandScheduler.getInstance().setDefaultCommand(drive, drive.driveCommand(controller, fieldRelative));
   }
 
   private void configureBindings() {
@@ -27,9 +28,15 @@ public class RobotContainer {
     controller.leftBumper().onTrue(intake.dump()).onFalse(intake.stop());
     controller.rightTrigger().onTrue(launcher.run()).onFalse(launcher.stop());
     controller.rightBumper().onTrue(launcher.runAtSpeed(3800)).onFalse(launcher.stop());
+    controller.a().onTrue(Commands.runOnce(drive::zeroHeading, drive));
+    controller.start().onTrue(toggleFieldRelative());
   }
 
   public Command getAutonomousCommand() {
     return Commands.print("No autonomous command configured");
+  }
+
+  public Command toggleFieldRelative() {
+    return Commands.run(() -> {this.fieldRelative = !this.fieldRelative;});
   }
 }
