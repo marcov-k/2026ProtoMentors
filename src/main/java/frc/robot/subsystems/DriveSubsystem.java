@@ -1,28 +1,37 @@
 package frc.robot.subsystems;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
+import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
+import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 import com.studica.frc.AHRS;
 
 public class DriveSubsystem extends SubsystemBase {
     
     // Declare 4 instances of SwerveModules
-    private final SwerveModule frontLeft; 
-    private final SwerveModule frontRight; 
-    private final SwerveModule rearLeft; 
-    private final SwerveModule rearRight; 
+    private final SwerveModule frontLeft = new SwerveModule(kFrontLeftDrivingCanId, kFrontLeftTurningCanId, kFrontLeftChassisAngularOffset); 
+    private final SwerveModule frontRight = new SwerveModule(kFrontRightDrivingCanId, kFrontRightTurningCanId, kFrontRightChassisAngularOffset); 
+    private final SwerveModule rearLeft = new SwerveModule(kRearLeftDrivingCanId, kRearLeftTurningCanId, kBackLeftChassisAngularOffset);
+    private final SwerveModule rearRight = new SwerveModule(kRearRightDrivingCanId, kRearRightTurningCanId, kBackRightChassisAngularOffset);
+
+    private final SwerveDriveOdometry odometry;
+
+    private final Field2d field = new Field2d();
 
     // Declare NavX AHRS Gyroscope
-    private final AHRS gyro;
+    private final AHRS gyro = new AHRS(AHRS.NavXComType.kMXP_SPI);
     
     // Speed Limit
     public static double kSpeedLimit = 0.5;
@@ -62,29 +71,69 @@ public class DriveSubsystem extends SubsystemBase {
 
     // Drive Subsystem Constructor
     public DriveSubsystem() {
-        // Initialize 4 instances of SwerveModules
-        frontLeft = new SwerveModule(
-            kFrontLeftDrivingCanId,
-            kFrontLeftTurningCanId,
-            kFrontLeftChassisAngularOffset);
+        gyro.zeroYaw();
 
-        frontRight = new SwerveModule(
-            kFrontRightDrivingCanId,
-            kFrontRightTurningCanId,
-            kFrontRightChassisAngularOffset);
+        // Create an Odometry object
+        odometry = new SwerveDriveOdometry(
+            kDriveKinematics,
+            getHeading(),
+            new SwerveModulePosition[] {
+                frontLeft.getPosition(),
+                frontRight.getPosition(),
+                rearLeft.getPosition(),
+                rearRight.getPosition()
+            }
+        );
 
-        rearLeft = new SwerveModule(
-            kRearLeftDrivingCanId,
-            kRearLeftTurningCanId,
-            kBackLeftChassisAngularOffset);
+        SmartDashboard.putData("Field", field);
+    }
 
-        rearRight = new SwerveModule(
-            kRearRightDrivingCanId,
-            kRearRightTurningCanId,
-            kBackRightChassisAngularOffset);
+    // Get current estimated pose from Odometry
+    public Pose2d getPose() {
+        return odometry.getPoseMeters();
+    }
 
-        // Initialize NavX AHRS Gyroscope
-        gyro = new AHRS(AHRS.NavXComType.kMXP_SPI);
+    // Periodic
+    @Override
+    public void periodic() {
+        odometry.update(
+            getHeading(),
+            new SwerveModulePosition[] {
+                frontLeft.getPosition(),
+                frontRight.getPosition(),
+                rearLeft.getPosition(),
+                rearRight.getPosition()
+            }
+        );
+        field.setRobotPose(getPose());
+        SmartDashboard.putNumber("Pose X (m)", getPose().getX());
+        SmartDashboard.putNumber("Pose Y (m)", getPose().getY());
+        SmartDashboard.putNumber("Pose Heading (deg)", getHeading().getDegrees());
+        SmartDashboard.putNumber("Raw gyro yaw", gyro.getYaw());        
+    }
+
+    // Get Current Angle from Gyroscope (and invert it)
+    public Rotation2d getHeading() {
+        return Rotation2d.fromDegrees(-gyro.getYaw());
+    }
+
+    // Resets odometry to a specified pose
+    public void resetOdometry(Pose2d pose) {
+        odometry.resetPosition(
+            getHeading(),
+            new SwerveModulePosition[] {
+                frontLeft.getPosition(),
+                frontRight.getPosition(),
+                rearLeft.getPosition(),
+                rearRight.getPosition()
+            },
+            pose);
+    }
+
+    // Zero heading
+    public void zeroHeading() {
+        gyro.zeroYaw();
+        resetOdometry(new Pose2d(getPose().getTranslation(),new Rotation2d()));
     }
 
     // Drive Method
@@ -95,13 +144,11 @@ public class DriveSubsystem extends SubsystemBase {
         strafe = -strafe * kMaxSpeedMetersPerSecond;
         rotation = -rotation * kMaxAngularSpeed;
 
-        // Grab the current angle from the Gyroscope and invert it because ChassisSpeeds expects counter clockwise positive. 
-        double currentangle = gyro.getYaw() * -1.0;
-
+       
         // Calculate Swerve Module States
         var swerveModuleStates = kDriveKinematics.toSwerveModuleStates(
             fieldRelative
-                ? ChassisSpeeds.fromFieldRelativeSpeeds(forward, strafe, rotation, Rotation2d.fromDegrees(currentangle))
+                ? ChassisSpeeds.fromFieldRelativeSpeeds(forward, strafe, rotation, getHeading())
                 : new ChassisSpeeds(forward, strafe, rotation)
         );
 
