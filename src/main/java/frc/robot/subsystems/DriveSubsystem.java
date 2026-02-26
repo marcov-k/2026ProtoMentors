@@ -6,7 +6,8 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
-import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
+import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
+import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -29,7 +30,11 @@ public class DriveSubsystem extends SubsystemBase {
     private final SwerveModule rearLeft = new SwerveModule(kRearLeftDrivingCanId, kRearLeftTurningCanId, kBackLeftChassisAngularOffset);
     private final SwerveModule rearRight = new SwerveModule(kRearRightDrivingCanId, kRearRightTurningCanId, kBackRightChassisAngularOffset);
 
-    private final SwerveDriveOdometry odometry;
+    
+
+    private final SwerveDrivePoseEstimator poseEstimator;
+    private final VisionSubsystem vision = new VisionSubsystem();
+
 
     private final Field2d field = new Field2d();
 
@@ -76,38 +81,59 @@ public class DriveSubsystem extends SubsystemBase {
     public DriveSubsystem() {
         gyro.zeroYaw();
 
-        // Create an Odometry object
-        odometry = new SwerveDriveOdometry(
+        // Create a Pose Estimator Object
+        poseEstimator = new SwerveDrivePoseEstimator(
             kDriveKinematics,
             getHeading(),
-            new SwerveModulePosition[] {
-                frontLeft.getPosition(),
-                frontRight.getPosition(),
-                rearLeft.getPosition(),
-                rearRight.getPosition()
-            }
+            getModulePositions(),
+            new Pose2d(),
+            // State std devs (how much you trust swerve+gyro)
+            VecBuilder.fill(0.05, 0.05, Math.toRadians(2.0)),
+            // Vision std devs (how much you trust vision)
+            VecBuilder.fill(0.30, 0.30, Math.toRadians(8.0))
         );
 
         SmartDashboard.putData("Field", field);
     }
 
+    private SwerveModulePosition[] getModulePositions() {
+    return new SwerveModulePosition[] {
+        frontLeft.getPosition(),
+        frontRight.getPosition(),
+        rearLeft.getPosition(),
+        rearRight.getPosition()
+    };
+}
     // Get current estimated pose from Odometry
     public Pose2d getPose() {
-        return odometry.getPoseMeters();
+        return poseEstimator.getEstimatedPosition();
     }
 
     // Periodic
     @Override
     public void periodic() {
-        odometry.update(
-            getHeading(),
-            new SwerveModulePosition[] {
-                frontLeft.getPosition(),
-                frontRight.getPosition(),
-                rearLeft.getPosition(),
-                rearRight.getPosition()
-            }
-        );
+        // Update Pose Estimate from Swerve Modules
+        poseEstimator.update(getHeading(), getModulePositions());
+
+        // Ask vision for a measurement and gate it
+        vision.getMeasurement(poseEstimator.getEstimatedPosition()).ifPresent(m -> {
+            // Conservative gates
+            if (m.tagCount() <= 0) return;
+
+            Pose2d current = poseEstimator.getEstimatedPosition();
+            Pose2d visionPose = m.pose();
+
+            double delta = current.getTranslation().getDistance(visionPose.getTranslation());
+            double dtheta = Math.abs(current.getRotation().minus(visionPose.getRotation()).getRadians());
+
+            // Reject crazy jumps (tune later)
+            if (delta > 2.0) return;
+            if (dtheta > Math.toRadians(60)) return;
+
+            poseEstimator.addVisionMeasurement(visionPose, m.timestampSeconds());
+        });
+
+        // Update SmartDashboard with pose
         field.setRobotPose(getPose());
         SmartDashboard.putNumber("Pose X (m)", getPose().getX());
         SmartDashboard.putNumber("Pose Y (m)", getPose().getY());
@@ -122,15 +148,7 @@ public class DriveSubsystem extends SubsystemBase {
 
     // Resets odometry to a specified pose
     public void resetOdometry(Pose2d pose) {
-        odometry.resetPosition(
-            getHeading(),
-            new SwerveModulePosition[] {
-                frontLeft.getPosition(),
-                frontRight.getPosition(),
-                rearLeft.getPosition(),
-                rearRight.getPosition()
-            },
-            pose);
+        poseEstimator.resetPosition(getHeading(), getModulePositions(), pose);
     }
 
     // Zero heading
@@ -178,11 +196,12 @@ public class DriveSubsystem extends SubsystemBase {
         , this);
     } 
 
+    // Reset Odometry to Starting Pose 
     public Command setPoseFromDsCommand() {
         return Commands.runOnce(() -> resetOdometry(getStartingPose()),this);
     }
 
-
+    // Returns an estimated default Starting Position based on Alliance and Station number
     public Pose2d getStartingPose() {
         Optional<DriverStation.Alliance> allianceOpt = DriverStation.getAlliance();
         int station = DriverStation.getLocation().orElse(2);
