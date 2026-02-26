@@ -25,7 +25,7 @@ public class DriveSubsystem extends SubsystemBase {
     private final AHRS gyro;
     
     // Speed Limit
-    public static double kSpeedLimit = 0.2;
+    public static double kSpeedLimit = 0.5;
 
     // SPARK MAX CAN IDs - Driving Motors
     public static final int kFrontLeftDrivingCanId = 1;
