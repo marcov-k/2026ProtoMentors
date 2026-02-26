@@ -13,8 +13,11 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+
+import java.util.Optional;
 
 import com.studica.frc.AHRS;
 
@@ -174,4 +177,46 @@ public class DriveSubsystem extends SubsystemBase {
             }
         , this);
     } 
+
+    public Command setPoseFromDsCommand() {
+        return Commands.runOnce(() -> resetOdometry(getStartingPose()),this);
+    }
+
+
+    public Pose2d getStartingPose() {
+        Optional<DriverStation.Alliance> allianceOpt = DriverStation.getAlliance();
+        int station = DriverStation.getLocation().orElse(2);
+
+        boolean isRed = allianceOpt.isPresent() && allianceOpt.get() == DriverStation.Alliance.Red;
+
+        double x;
+        double y;
+        Rotation2d heading;
+
+        if (!isRed) {
+            // BLUE side
+            heading = Rotation2d.fromDegrees(0);  // or whatever forward means for you
+
+            switch (station) {
+                case 1: x = 4.0; y = 6.0; break;
+                case 2: x = 4.0; y = 4.0; break;
+                case 3: x = 4.0; y = 2.0; break;
+                default: x = 4.0; y = 4.0;
+            }
+
+        } else {
+            // RED side — mirror across field length
+            heading = Rotation2d.fromDegrees(180);
+
+            switch (station) {
+                case 1: x = 12.5; y = 2; break;
+                case 2: x = 12.5; y = 4; break;
+                case 3: x = 12.5; y = 6; break;
+                default: x = 12.5; y = 4;
+            }
+        }
+
+        return new Pose2d(x, y, heading);
+    }
+
 }
