@@ -30,6 +30,7 @@ public class Launcher extends SubsystemBase{
         DefaultConfig.idleMode(IdleMode.kCoast);
         DefaultConfig.openLoopRampRate(1.0);
         DefaultConfig.inverted(true);
+        DefaultConfig.voltageCompensation(12);
         DefaultConfig.closedLoop.allowedClosedLoopError(100.0, ClosedLoopSlot.kSlot0);
     }
 
@@ -39,8 +40,6 @@ public class Launcher extends SubsystemBase{
         HopperMotor = new SparkMax(kHopperMotorCanID, MotorType.kBrushless);
         HopperMotor.configure(DefaultConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
         LaunchController = LaunchMotor.getClosedLoopController();
-        
-
     }
 
     public Command runAtSpeed(double velocity) {      
@@ -53,9 +52,10 @@ public class Launcher extends SubsystemBase{
 
     public Command run() {
         return Commands.sequence(
-            Commands.runOnce(() ->  LaunchMotor.set(.75)),
+            Commands.runOnce(() -> LaunchMotor.set(.75)),
+            Commands.runOnce(() -> LaunchMotor.setVoltage(10)),
             Commands.waitSeconds(1.0),
-            Commands.runOnce(() -> HopperMotor.set(.5))
+            Commands.runOnce(() -> HopperMotor.set(.3))
         );
     }
 
