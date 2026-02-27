@@ -7,12 +7,10 @@ package frc.robot;
 import java.util.function.DoubleSupplier;
 
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.commands.AimAtTargetCommand;
 import frc.robot.field.AllianceUtil;
-import frc.robot.field.FieldConstants;
 import frc.robot.subsystems.*;
 
 

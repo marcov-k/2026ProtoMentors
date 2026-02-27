@@ -37,6 +37,7 @@ public class DriveSubsystem extends SubsystemBase {
     private final SwerveDrivePoseEstimator poseEstimator;
     private final VisionSubsystem vision = new VisionSubsystem();
 
+    private boolean visionLocked;
 
     private final Field2d field = new Field2d();
 
@@ -95,6 +96,8 @@ public class DriveSubsystem extends SubsystemBase {
             VecBuilder.fill(0.30, 0.30, Math.toRadians(8.0))
         );
 
+        visionLocked = false;
+
         SmartDashboard.putData("Field", field);
     }
 
@@ -111,6 +114,11 @@ public class DriveSubsystem extends SubsystemBase {
         return poseEstimator.getEstimatedPosition();
     }
 
+    
+    public void teleopInit() {
+
+    }
+
     // Periodic
     @Override
     public void periodic() {
@@ -122,16 +130,23 @@ public class DriveSubsystem extends SubsystemBase {
             // Conservative gates
             if (m.tagCount() <= 0) return;
 
+            // Get Pose from Vision and Swerve
             Pose2d current = poseEstimator.getEstimatedPosition();
             Pose2d visionPose = m.pose();
 
+            // Compare them
             double delta = current.getTranslation().getDistance(visionPose.getTranslation());
             double dtheta = Math.abs(current.getRotation().minus(visionPose.getRotation()).getRadians());
 
-            // Reject crazy jumps (tune later)
-            if (delta > 2.0) return;
-            if (dtheta > Math.toRadians(60)) return;
+            // Reject crazy jumps once locked in
+            if (delta > 1.0 & visionLocked) return;
+            else if (delta > 6.0) return;
+            if (dtheta > Math.toRadians(60) & visionLocked) return;
 
+            // Allow one crazy jump based on vision when we can see at least 2 tags, then lock it in.
+            if (m.tagCount() >= 2 ) visionLocked = true;
+
+            // Integrate vision pose into Swerve Pose
             poseEstimator.addVisionMeasurement(visionPose, m.timestampSeconds());
         });
 
@@ -209,6 +224,7 @@ public class DriveSubsystem extends SubsystemBase {
         int station = DriverStation.getLocation().orElse(2);
         boolean isRed = allianceOpt.isPresent() && allianceOpt.get() == DriverStation.Alliance.Red;
         Pose2d startingPose = new Pose2d();
+        visionLocked = false;
 
         if (!isRed) {
             // BLUE side

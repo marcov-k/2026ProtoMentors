@@ -42,7 +42,7 @@ public class AimAtTargetCommand extends Command {
     Pose2d pose = drive.getPose();
     Translation2d target = targetSupplier.get();
     Translation2d delta = target.minus(pose.getTranslation());
-    double distance = delta.getNorm();
+    // double distance = delta.getNorm();
     Rotation2d bearingField = new Rotation2d(Math.atan2(delta.getY(), delta.getX()));
     Rotation2d robotToTarget = bearingField.minus(pose.getRotation());
     double rotCmd = thetaPid.calculate(robotToTarget.getRadians(), 0.0);
