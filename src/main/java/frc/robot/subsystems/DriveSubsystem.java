@@ -11,6 +11,7 @@ import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import frc.robot.field.FieldConstants;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -19,6 +20,7 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 import java.util.Optional;
+import java.util.function.BooleanSupplier;
 
 import com.studica.frc.AHRS;
 
@@ -158,7 +160,7 @@ public class DriveSubsystem extends SubsystemBase {
     }
 
     // Drive Method
-    public void drive(double forward, double strafe, double rotation, boolean fieldRelative) {
+    public void drive(double forward, double strafe, double rotation, Boolean fieldRelative) {
 
         // Convert the commanded speeds into the correct units for the drivetrain, and convert controller left and forward into positive numbers as expected for swerve
         forward = -forward * kMaxSpeedMetersPerSecond;
@@ -185,13 +187,13 @@ public class DriveSubsystem extends SubsystemBase {
     }
 
     // Drive Command
-    public Command driveCommand(CommandXboxController controller, boolean fieldRelative){
+    public Command driveCommand(CommandXboxController controller, BooleanSupplier fieldRelative){
         return Commands.run(
             () -> {
                 double forward = MathUtil.applyDeadband(controller.getLeftY() * kSpeedLimit, 0.02);
                 double strafe = MathUtil.applyDeadband(controller.getLeftX() * kSpeedLimit, 0.02);
                 double rotate = MathUtil.applyDeadband(controller.getRightX() * kSpeedLimit, 0.02);
-                this.drive(forward, strafe, rotate, fieldRelative);
+                this.drive(forward, strafe, rotate, fieldRelative.getAsBoolean());
             }
         , this);
     } 
@@ -205,37 +207,29 @@ public class DriveSubsystem extends SubsystemBase {
     public Pose2d getStartingPose() {
         Optional<DriverStation.Alliance> allianceOpt = DriverStation.getAlliance();
         int station = DriverStation.getLocation().orElse(2);
-
         boolean isRed = allianceOpt.isPresent() && allianceOpt.get() == DriverStation.Alliance.Red;
-
-        double x;
-        double y;
-        Rotation2d heading;
+        Pose2d startingPose = new Pose2d();
 
         if (!isRed) {
             // BLUE side
-            heading = Rotation2d.fromDegrees(0);  // or whatever forward means for you
-
             switch (station) {
-                case 1: x = 4.0; y = 6.0; break;
-                case 2: x = 4.0; y = 4.0; break;
-                case 3: x = 4.0; y = 2.0; break;
-                default: x = 4.0; y = 4.0;
+                case 1: startingPose = FieldConstants.StartingPositions.BLUE_STATION_1; break;
+                case 2: startingPose = FieldConstants.StartingPositions.BLUE_STATION_2; break;
+                case 3: startingPose = FieldConstants.StartingPositions.BLUE_STATION_3; break;
+                default: startingPose = FieldConstants.StartingPositions.BLUE_STATION_1;
             }
 
         } else {
-            // RED side — mirror across field length
-            heading = Rotation2d.fromDegrees(180);
-
+            // RED side
             switch (station) {
-                case 1: x = 12.5; y = 2; break;
-                case 2: x = 12.5; y = 4; break;
-                case 3: x = 12.5; y = 6; break;
-                default: x = 12.5; y = 4;
+                case 1: startingPose = FieldConstants.StartingPositions.RED_STATION_1; break;
+                case 2: startingPose = FieldConstants.StartingPositions.RED_STATION_2; break;
+                case 3: startingPose = FieldConstants.StartingPositions.RED_STATION_3; break;
+                default: startingPose = FieldConstants.StartingPositions.RED_STATION_1;
             }
         }
-
-        return new Pose2d(x, y, heading);
+        
+        return startingPose;
     }
 
 }
