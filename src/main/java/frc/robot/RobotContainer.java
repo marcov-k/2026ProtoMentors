@@ -41,9 +41,7 @@ public class RobotContainer {
         new AimAtTargetCommand(drive, fwd, str, () -> fieldRelative, AllianceUtil::getAllianceHubCenter),
         new AutoRPMFromDistanceCommand(drive, launcher, AllianceUtil::getAllianceHubCenter)
       )
-    );
-    // controller.y().whileTrue(new AutoRPMFromDistanceCommand(drive, launcher, AllianceUtil::getAllianceHubCenter));
-    // controller.rightBumper().onTrue(launcher.runAtSpeed(3800)).onFalse(launcher.stop());
+    );    
     controller.a().onTrue(Commands.runOnce(drive::zeroHeading, drive));    
     controller.start().onTrue(toggleFieldRelative());
   }
