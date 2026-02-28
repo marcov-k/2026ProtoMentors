@@ -18,14 +18,13 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
+import frc.robot.subsystems.Constants.VisionConstants;
+
 public class VisionSubsystem extends SubsystemBase {
 
     public record VisionMeasurement(Pose2d pose, double timestampSeconds, int tagCount) {}
     private final PhotonCamera camera;
     private final PhotonPoseEstimator poseEstimator;
-
-    private final String cameraName = "FrontLeftCamera";
-
     
     // TODO: Replace with your actual robot-to-camera transform (meters, radians).
     // Coordinate convention: +X forward, +Y left, +Z up (WPILib).
@@ -37,7 +36,7 @@ public class VisionSubsystem extends SubsystemBase {
 
     public VisionSubsystem() {
         
-        this.camera = new PhotonCamera(cameraName);
+        this.camera = new PhotonCamera(VisionConstants.kCameraName);
 
         AprilTagFieldLayout fieldLayout = AprilTagFields.k2026RebuiltAndymark.loadAprilTagLayoutField();
 

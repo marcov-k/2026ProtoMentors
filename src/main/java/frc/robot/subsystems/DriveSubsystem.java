@@ -3,13 +3,11 @@ package frc.robot.subsystems;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.field.FieldConstants;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -24,15 +22,19 @@ import java.util.function.BooleanSupplier;
 
 import com.studica.frc.AHRS;
 
+import frc.robot.subsystems.Constants.DriveConstants;
+
 public class DriveSubsystem extends SubsystemBase {
     
     // Declare 4 instances of SwerveModules
-    private final SwerveModule frontLeft = new SwerveModule(kFrontLeftDrivingCanId, kFrontLeftTurningCanId, kFrontLeftChassisAngularOffset); 
-    private final SwerveModule frontRight = new SwerveModule(kFrontRightDrivingCanId, kFrontRightTurningCanId, kFrontRightChassisAngularOffset); 
-    private final SwerveModule rearLeft = new SwerveModule(kRearLeftDrivingCanId, kRearLeftTurningCanId, kBackLeftChassisAngularOffset);
-    private final SwerveModule rearRight = new SwerveModule(kRearRightDrivingCanId, kRearRightTurningCanId, kBackRightChassisAngularOffset);
-
-    
+    private final SwerveModule frontLeft = new SwerveModule(DriveConstants.kFrontLeftDrivingCanId, DriveConstants.kFrontLeftTurningCanId,
+        DriveConstants.kFrontLeftChassisAngularOffset); 
+    private final SwerveModule frontRight = new SwerveModule(DriveConstants.kFrontRightDrivingCanId, DriveConstants.kFrontRightTurningCanId,
+        DriveConstants.kFrontRightChassisAngularOffset); 
+    private final SwerveModule rearLeft = new SwerveModule(DriveConstants.kRearLeftDrivingCanId, DriveConstants.kRearLeftTurningCanId,
+        DriveConstants.kBackLeftChassisAngularOffset);
+    private final SwerveModule rearRight = new SwerveModule(DriveConstants.kRearRightDrivingCanId, DriveConstants.kRearRightTurningCanId,
+        DriveConstants.kBackRightChassisAngularOffset);
 
     private final SwerveDrivePoseEstimator poseEstimator;
     private final VisionSubsystem vision = new VisionSubsystem();
@@ -43,42 +45,6 @@ public class DriveSubsystem extends SubsystemBase {
 
     // Declare NavX AHRS Gyroscope
     private final AHRS gyro = new AHRS(AHRS.NavXComType.kMXP_SPI);
-    
-    // Speed Limit
-    public static double kSpeedLimit = 0.5;
-
-    // SPARK MAX CAN IDs - Driving Motors
-    public static final int kFrontLeftDrivingCanId = 1;
-    public static final int kFrontRightDrivingCanId = 2;
-    public static final int kRearRightDrivingCanId = 3;
-    public static final int kRearLeftDrivingCanId = 4;    
-
-    // SPARK MAX CAN IDs - Turning Motors
-    public static final int kFrontLeftTurningCanId = 5;    
-    public static final int kFrontRightTurningCanId = 6;
-    public static final int kRearRightTurningCanId = 7;
-    public static final int kRearLeftTurningCanId = 8;  
-
-    // Chassis configuration
-    public static final double kWheelBase = Units.inchesToMeters(27.8);
-    public static final double kTrackWidth = Units.inchesToMeters(19.25);
-
-    // Driving Parameters 
-    public static final double kMaxSpeedMetersPerSecond = 4.8; // Default is 4.8 meters per second     
-    public static final double kMaxAngularSpeed = 2 * Math.PI; // Default is 2 PI radians (one full rotation) per second 
-
-    // Swerve Drive Kinematics
-    public static final SwerveDriveKinematics kDriveKinematics = new SwerveDriveKinematics(
-        new Translation2d(kWheelBase / 2, kTrackWidth / 2),
-        new Translation2d(kWheelBase / 2, -kTrackWidth / 2),
-        new Translation2d(-kWheelBase / 2, kTrackWidth / 2),
-        new Translation2d(-kWheelBase / 2, -kTrackWidth / 2));
-
-    // Angular offsets in radians
-    public static final double kFrontLeftChassisAngularOffset = -Math.PI / 2;
-    public static final double kFrontRightChassisAngularOffset = 0;
-    public static final double kBackLeftChassisAngularOffset = Math.PI;
-    public static final double kBackRightChassisAngularOffset = Math.PI / 2;
 
     // Drive Subsystem Constructor
     public DriveSubsystem() {
@@ -86,7 +52,7 @@ public class DriveSubsystem extends SubsystemBase {
 
         // Create a Pose Estimator Object
         poseEstimator = new SwerveDrivePoseEstimator(
-            kDriveKinematics,
+            DriveConstants.kDriveKinematics,
             getHeading(),
             getModulePositions(),
             new Pose2d(),
@@ -102,22 +68,19 @@ public class DriveSubsystem extends SubsystemBase {
     }
 
     private SwerveModulePosition[] getModulePositions() {
-    return new SwerveModulePosition[] {
-        frontLeft.getPosition(),
-        frontRight.getPosition(),
-        rearLeft.getPosition(),
-        rearRight.getPosition()
-    };
-}
+        return new SwerveModulePosition[] {
+            frontLeft.getPosition(),
+            frontRight.getPosition(),
+            rearLeft.getPosition(),
+            rearRight.getPosition()
+        };
+    }
     // Get current estimated pose from Odometry
     public Pose2d getPose() {
         return poseEstimator.getEstimatedPosition();
     }
-
     
-    public void teleopInit() {
-
-    }
+    public void teleopInit() {}
 
     // Periodic
     @Override
@@ -176,22 +139,20 @@ public class DriveSubsystem extends SubsystemBase {
 
     // Drive Method
     public void drive(double forward, double strafe, double rotation, Boolean fieldRelative) {
-
         // Convert the commanded speeds into the correct units for the drivetrain, and convert controller left and forward into positive numbers as expected for swerve
-        forward = -forward * kMaxSpeedMetersPerSecond;
-        strafe = -strafe * kMaxSpeedMetersPerSecond;
-        rotation = -rotation * kMaxAngularSpeed;
+        forward = -forward * DriveConstants.kMaxSpeedMetersPerSecond;
+        strafe = -strafe * DriveConstants.kMaxSpeedMetersPerSecond;
+        rotation = -rotation * DriveConstants.kMaxAngularSpeed;
 
-       
         // Calculate Swerve Module States
-        var swerveModuleStates = kDriveKinematics.toSwerveModuleStates(
+        var swerveModuleStates = DriveConstants.kDriveKinematics.toSwerveModuleStates(
             fieldRelative
                 ? ChassisSpeeds.fromFieldRelativeSpeeds(forward, strafe, rotation, getHeading())
                 : new ChassisSpeeds(forward, strafe, rotation)
         );
 
         // Desaturate Swerve Module States 
-        SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, kMaxSpeedMetersPerSecond);
+        SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, DriveConstants.kMaxSpeedMetersPerSecond);
 
         // Set Swerve Module States
         frontLeft.setDesiredState(swerveModuleStates[0]);
@@ -205,12 +166,11 @@ public class DriveSubsystem extends SubsystemBase {
     public Command driveCommand(CommandXboxController controller, BooleanSupplier fieldRelative){
         return Commands.run(
             () -> {
-                double forward = MathUtil.applyDeadband(controller.getLeftY() * kSpeedLimit, 0.02);
-                double strafe = MathUtil.applyDeadband(controller.getLeftX() * kSpeedLimit, 0.02);
-                double rotate = MathUtil.applyDeadband(controller.getRightX() * kSpeedLimit, 0.02);
+                double forward = MathUtil.applyDeadband(controller.getLeftY() * DriveConstants.kSpeedLimit, 0.02);
+                double strafe = MathUtil.applyDeadband(controller.getLeftX() * DriveConstants.kSpeedLimit, 0.02);
+                double rotate = MathUtil.applyDeadband(controller.getRightX() * DriveConstants.kSpeedLimit, 0.02);
                 this.drive(forward, strafe, rotate, fieldRelative.getAsBoolean());
-            }
-        , this);
+            }, this);
     } 
 
     // Reset Odometry to Starting Pose 
@@ -247,5 +207,4 @@ public class DriveSubsystem extends SubsystemBase {
         
         return startingPose;
     }
-
 }

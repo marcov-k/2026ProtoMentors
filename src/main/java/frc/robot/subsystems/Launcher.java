@@ -4,8 +4,6 @@ import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.ClosedLoopSlot;
 import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkMax;
-import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
-import com.revrobotics.spark.config.SparkMaxConfig;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -17,32 +15,21 @@ import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 
+import frc.robot.subsystems.Constants.LauncherConstants;
+
 @SuppressWarnings("removal")
 public class Launcher extends SubsystemBase{
-
-    private static SparkMaxConfig DefaultConfig = new SparkMaxConfig();    
     private SparkMax LaunchMotor;     
     private SparkMax HopperMotor;
-    public static final int kHopperMotorCanID = 10;
-    public static final int kLaunchMotorCanID = 11;
     private SparkClosedLoopController LaunchController;
     private RelativeEncoder launchEncoder;
     private double targetRpm = 0.0;
 
-    static {
-        DefaultConfig.smartCurrentLimit(50);
-        DefaultConfig.idleMode(IdleMode.kCoast);
-        DefaultConfig.openLoopRampRate(1.0);
-        DefaultConfig.inverted(true);
-        DefaultConfig.voltageCompensation(12);
-        DefaultConfig.closedLoop.allowedClosedLoopError(100.0, ClosedLoopSlot.kSlot0);
-    }
-
     public Launcher() {
-        LaunchMotor = new SparkMax(kLaunchMotorCanID, MotorType.kBrushless);
-        LaunchMotor.configure(DefaultConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
-        HopperMotor = new SparkMax(kHopperMotorCanID, MotorType.kBrushless);
-        HopperMotor.configure(DefaultConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
+        LaunchMotor = new SparkMax(LauncherConstants.kLaunchMotorCanID, MotorType.kBrushless);
+        LaunchMotor.configure(LauncherConstants.DefaultConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
+        HopperMotor = new SparkMax(LauncherConstants.kHopperMotorCanID, MotorType.kBrushless);
+        HopperMotor.configure(LauncherConstants.DefaultConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
         LaunchController = LaunchMotor.getClosedLoopController();
         launchEncoder = LaunchMotor.getEncoder();
     }
@@ -99,8 +86,7 @@ public class Launcher extends SubsystemBase{
 
     public Command stop() {
         return Commands.runOnce(() -> {
-            HopperMotor.stopMotor(); 
-            LaunchMotor.stopMotor();
+            this.stopAll();
         });
     }
 }
