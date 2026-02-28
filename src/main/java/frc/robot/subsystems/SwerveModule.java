@@ -4,6 +4,7 @@ import com.revrobotics.AbsoluteEncoder;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
@@ -17,7 +18,7 @@ import frc.robot.subsystems.Constants.ModuleConstants;
 
 @SuppressWarnings("removal")
 public class SwerveModule {
-    private final SparkMax drivingSparkMax;
+    private final SparkFlex drivingSparkFlex;
     private final SparkMax turningSparkMax;
 
     private final RelativeEncoder drivingEncoder;
@@ -30,15 +31,15 @@ public class SwerveModule {
     private SwerveModuleState desiredState = new SwerveModuleState(0.0, new Rotation2d());
     
     public SwerveModule(int drivingCANId, int turningCANId, double thisChassisAngularOffset) {
-        drivingSparkMax = new SparkMax(drivingCANId, MotorType.kBrushless);
+        drivingSparkFlex = new SparkFlex(drivingCANId, MotorType.kBrushless);
         turningSparkMax = new SparkMax(turningCANId, MotorType.kBrushless);
 
-        drivingEncoder = drivingSparkMax.getEncoder();
+        drivingEncoder = drivingSparkFlex.getEncoder();
         turningEncoder = turningSparkMax.getAbsoluteEncoder();
-        drivingPIDController = drivingSparkMax.getClosedLoopController();
+        drivingPIDController = drivingSparkFlex.getClosedLoopController();
         turningPIDController = turningSparkMax.getClosedLoopController();
 
-        drivingSparkMax.configure(ModuleConstants.drivingConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+        drivingSparkFlex.configure(ModuleConstants.drivingConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
         turningSparkMax.configure(ModuleConstants.turningConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
         chassisAngularOffset = thisChassisAngularOffset;

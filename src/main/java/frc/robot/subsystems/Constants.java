@@ -4,6 +4,7 @@ import com.revrobotics.spark.ClosedLoopSlot;
 import com.revrobotics.spark.FeedbackSensor;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
+import com.revrobotics.spark.config.SparkFlexConfig;
 
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
@@ -25,7 +26,7 @@ public final class Constants
         public static final double kWheelCircumferenceMeters = kWheelDiameterMeters * Math.PI;
         public static final double kDrivingMotorReduction = (45.0 * 22) / (kDrivingMotorPinionTeeth * 15);
         public static final double kDriveWheelFreeSpeedRps = (kDrivingMotorFreeSpeedRps * kWheelCircumferenceMeters) / kDrivingMotorReduction;
-        public static final SparkMaxConfig drivingConfig = new SparkMaxConfig();
+        public static final SparkFlexConfig drivingConfig = new SparkFlexConfig();
         public static final SparkMaxConfig turningConfig = new SparkMaxConfig();
         static
         {
