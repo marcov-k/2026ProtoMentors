@@ -1,11 +1,13 @@
 package frc.robot.subsystems;
 
+import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.ClosedLoopSlot;
 import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
 
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -24,6 +26,8 @@ public class Launcher extends SubsystemBase{
     public static final int kHopperMotorCanID = 10;
     public static final int kLaunchMotorCanID = 11;
     private SparkClosedLoopController LaunchController;
+    private RelativeEncoder launchEncoder;
+    private double targetRpm = 0.0;
 
     static {
         DefaultConfig.smartCurrentLimit(50);
@@ -40,6 +44,40 @@ public class Launcher extends SubsystemBase{
         HopperMotor = new SparkMax(kHopperMotorCanID, MotorType.kBrushless);
         HopperMotor.configure(DefaultConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
         LaunchController = LaunchMotor.getClosedLoopController();
+        launchEncoder = LaunchMotor.getEncoder();
+    }
+
+    @Override
+    public void periodic() {
+        SmartDashboard.putNumber("Shooter/TargetRPM", targetRpm);
+        SmartDashboard.putNumber("Shooter/ActualRPM", getActualRpm());
+        SmartDashboard.putBoolean("Shooter/AtSetpoint", atSetpoint());
+    }
+
+    public void setTargetRpm(double rpm) {
+        targetRpm = rpm;
+        LaunchController.setSetpoint(rpm, ControlType.kVelocity, ClosedLoopSlot.kSlot0);
+    }
+
+    public double getTargetRpm() {
+        return targetRpm;
+    }
+
+    public double getActualRpm() {
+        return launchEncoder.getVelocity(); // RPM
+    }
+
+    public boolean atSetpoint() {
+        return LaunchController.isAtSetpoint(); // +/- 100 RPM error 
+    }
+
+    public void setHopper(double power) {
+        HopperMotor.set(power);
+    }
+
+    public void stopAll() {
+        HopperMotor.stopMotor();
+        LaunchMotor.stopMotor();
     }
 
     public Command runAtSpeed(double velocity) {      

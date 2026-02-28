@@ -9,9 +9,9 @@ import java.util.function.DoubleSupplier;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import frc.robot.commands.AimAtTargetCommand;
 import frc.robot.field.AllianceUtil;
 import frc.robot.subsystems.*;
+import frc.robot.commands.*;
 
 
 public class RobotContainer {
@@ -25,6 +25,7 @@ public class RobotContainer {
   public RobotContainer() {
     configureBindings();
     drive.setDefaultCommand(drive.driveCommand(controller, () -> fieldRelative));    
+    launcher.setDefaultCommand(Commands.run(launcher::stopAll, launcher));
   }
 
   private void configureBindings() {
@@ -35,7 +36,13 @@ public class RobotContainer {
     controller.leftTrigger().onTrue(intake.run()).onFalse(intake.stop());
     controller.leftBumper().onTrue(intake.dump()).onFalse(intake.stop());
     controller.rightTrigger().onTrue(launcher.run()).onFalse(launcher.stop());
-    controller.rightBumper().whileTrue(new AimAtTargetCommand(drive, fwd, str, () -> fieldRelative, AllianceUtil::getAllianceHubCenter));
+    controller.rightBumper().whileTrue(
+      Commands.parallel(
+        new AimAtTargetCommand(drive, fwd, str, () -> fieldRelative, AllianceUtil::getAllianceHubCenter),
+        new AutoRPMFromDistanceCommand(drive, launcher, AllianceUtil::getAllianceHubCenter)
+      )
+    );
+    // controller.y().whileTrue(new AutoRPMFromDistanceCommand(drive, launcher, AllianceUtil::getAllianceHubCenter));
     // controller.rightBumper().onTrue(launcher.runAtSpeed(3800)).onFalse(launcher.stop());
     controller.a().onTrue(Commands.runOnce(drive::zeroHeading, drive));    
     controller.start().onTrue(toggleFieldRelative());
@@ -46,6 +53,6 @@ public class RobotContainer {
   }
 
   public Command toggleFieldRelative() {
-    return Commands.run(() -> {this.fieldRelative = !this.fieldRelative;});
+    return Commands.runOnce(() -> {this.fieldRelative = !this.fieldRelative;});
   }
 }

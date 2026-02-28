@@ -55,10 +55,5 @@ public class AimAtTargetCommand extends Command {
     );
   }
 
-
-  @Override
-  public boolean isFinished() {
-    return thetaPid.atSetpoint();
-  }
 }
 
