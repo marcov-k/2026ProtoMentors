@@ -13,7 +13,8 @@ import java.util.function.DoubleSupplier;
 
 import frc.robot.subsystems.Constants.*;
 
-public class AimAtTargetCommand extends Command {
+public class AimAtTargetCommand extends Command
+{
     private final DriveSubsystem drive;
     private final DoubleSupplier fwd;
     private final DoubleSupplier strafe;
@@ -25,7 +26,8 @@ public class AimAtTargetCommand extends Command {
                                 DoubleSupplier fwd,
                                 DoubleSupplier strafe,
                                 BooleanSupplier fieldRelative,
-                                Supplier<Translation2d> targetSupplier) {
+                                Supplier<Translation2d> targetSupplier)
+    {
         this.drive = drive;
         this.fwd = fwd;
         this.strafe = strafe;
@@ -39,7 +41,8 @@ public class AimAtTargetCommand extends Command {
     }
 
     @Override
-    public void execute() {
+    public void execute()
+    {
         Pose2d pose = drive.getPose();
         Translation2d target = targetSupplier.get();
         Translation2d delta = target.minus(pose.getTranslation());
