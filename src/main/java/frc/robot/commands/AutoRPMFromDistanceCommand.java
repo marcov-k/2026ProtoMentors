@@ -11,12 +11,14 @@ import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.Launcher;
 import frc.robot.utilities.ShooterMap;
 
-public class AutoRPMFromDistanceCommand extends Command {
+public class AutoRPMFromDistanceCommand extends Command
+{
     private final DriveSubsystem drive;
     private final Launcher launcher;
     private final Supplier<Translation2d> targetSupplier;
 
-    public AutoRPMFromDistanceCommand(DriveSubsystem drive, Launcher launcher, Supplier<Translation2d> targetSupplier) {
+    public AutoRPMFromDistanceCommand(DriveSubsystem drive, Launcher launcher, Supplier<Translation2d> targetSupplier)
+    {
         this.drive = drive;
         this.launcher = launcher;
         this.targetSupplier = targetSupplier;
@@ -25,7 +27,8 @@ public class AutoRPMFromDistanceCommand extends Command {
     }
 
     @Override
-    public void execute() {
+    public void execute()
+    {
         Pose2d pose = drive.getPose();
         Translation2d target = targetSupplier.get();
         double distance = target.minus(pose.getTranslation()).getNorm();
@@ -38,12 +41,14 @@ public class AutoRPMFromDistanceCommand extends Command {
     }
 
     @Override
-    public boolean isFinished() {
+    public boolean isFinished()
+    {
         return false;
     }
 
     @Override
-    public void end(boolean interrupted) {
+    public void end(boolean interrupted)
+    {
         // Choose behavior:
         launcher.stopAll();  
         launcher.setHopper(0); // safer default: at least stop feeding

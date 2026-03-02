@@ -15,20 +15,23 @@ import frc.robot.subsystems.*;
 import frc.robot.commands.*;
 import frc.robot.subsystems.Constants.*;
 
-public class RobotContainer {
+public class RobotContainer
+{
     public final DriveSubsystem drive = new DriveSubsystem();
     public final Intake intake = new Intake();
     public final Launcher launcher = new Launcher();
     private final CommandXboxController controller = new CommandXboxController(0);
     private Boolean fieldRelative = true;
 
-    public RobotContainer() {
+    public RobotContainer()
+    {
         configureBindings();
         drive.setDefaultCommand(drive.driveCommand(controller, () -> fieldRelative));    
         launcher.setDefaultCommand(Commands.run(launcher::stopAll, launcher));
     }
 
-    private void configureBindings() {
+    private void configureBindings()
+    {
         DoubleSupplier fwd = () -> edu.wpi.first.math.MathUtil.applyDeadband(controller.getLeftY() * DriveConstants.kSpeedLimit, 0.02);
         DoubleSupplier str = () -> edu.wpi.first.math.MathUtil.applyDeadband(controller.getLeftX() * DriveConstants.kSpeedLimit, 0.02);
         BooleanSupplier fieldRel = () -> fieldRelative;
@@ -36,26 +39,31 @@ public class RobotContainer {
         controller.leftTrigger().onTrue(intake.run()).onFalse(intake.stop());
         controller.leftBumper().onTrue(intake.dump()).onFalse(intake.stop());
         controller.rightTrigger().onTrue(launcher.run()).onFalse(launcher.stop());
+
         controller.rightBumper().whileTrue(
             Commands.parallel(
                 new AimAtTargetCommand(drive, fwd, str, fieldRel, AllianceUtil::getAllianceHubCenter),
                 new AutoRPMFromDistanceCommand(drive, launcher, AllianceUtil::getAllianceHubCenter)
             )
         );
+
         controller.b().whileTrue(
             Commands.sequence(
                 new DriveToTargetCommand(drive, fieldRel, AllianceUtil::getAllianceLaunchPos)
             )
         );
+
         controller.a().onTrue(Commands.runOnce(drive::zeroHeading, drive));    
         controller.start().onTrue(toggleFieldRelative());
     }
 
-    public Command getAutonomousCommand() {
+    public Command getAutonomousCommand()
+    {
         return Commands.print("No autonomous command configured");
     }
 
-    public Command toggleFieldRelative() {
+    public Command toggleFieldRelative()
+    {
         return Commands.runOnce(() -> {this.fieldRelative = !this.fieldRelative;});
     }
 }

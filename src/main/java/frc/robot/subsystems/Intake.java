@@ -12,22 +12,27 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 import frc.robot.subsystems.Constants.IntakeConstants;
 
 @SuppressWarnings("removal")
-public class Intake extends SubsystemBase{
+public class Intake extends SubsystemBase
+{
     private SparkMax IntakeMotor;     
 
-    public Intake() {
+    public Intake()
+    {
         IntakeMotor = new SparkMax(IntakeConstants.kIntakeMotorCanID, MotorType.kBrushless);
         IntakeMotor.configure(IntakeConstants.DefaultConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
     }
 
-    public Command run() {
+    public Command run()
+    {
         return Commands.runOnce(() -> IntakeMotor.set(1.0));
     }
 
-    public Command dump() {
+    public Command dump()
+    {
         return Commands.runOnce(() -> IntakeMotor.set(-1.0));
     }
-    public Command stop() {
+    public Command stop()
+    {
         return Commands.runOnce(() -> IntakeMotor.stopMotor());
     }
 }

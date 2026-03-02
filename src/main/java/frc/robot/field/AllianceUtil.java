@@ -5,7 +5,8 @@ import java.util.Optional;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 
-public class AllianceUtil {
+public class AllianceUtil
+{
     public static Translation2d getAllianceHubCenter()
     {
         return isRed() ? FieldConstants.RED_HUB_CENTER : FieldConstants.BLUE_HUB_CENTER;

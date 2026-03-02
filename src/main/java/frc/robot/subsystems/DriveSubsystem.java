@@ -24,7 +24,8 @@ import com.studica.frc.AHRS;
 
 import frc.robot.subsystems.Constants.DriveConstants;
 
-public class DriveSubsystem extends SubsystemBase {
+public class DriveSubsystem extends SubsystemBase
+{
     
     // Declare 4 instances of SwerveModules
     private final SwerveModule frontLeft = new SwerveModule(DriveConstants.kFrontLeftDrivingCanId, DriveConstants.kFrontLeftTurningCanId,
@@ -47,7 +48,8 @@ public class DriveSubsystem extends SubsystemBase {
     private final AHRS gyro = new AHRS(AHRS.NavXComType.kMXP_SPI);
 
     // Drive Subsystem Constructor
-    public DriveSubsystem() {
+    public DriveSubsystem()
+    {
         gyro.zeroYaw();
 
         // Create a Pose Estimator Object
@@ -67,7 +69,8 @@ public class DriveSubsystem extends SubsystemBase {
         SmartDashboard.putData("Field", field);
     }
 
-    private SwerveModulePosition[] getModulePositions() {
+    private SwerveModulePosition[] getModulePositions()
+    {
         return new SwerveModulePosition[] {
             frontLeft.getPosition(),
             frontRight.getPosition(),
@@ -76,7 +79,8 @@ public class DriveSubsystem extends SubsystemBase {
         };
     }
     // Get current estimated pose from Odometry
-    public Pose2d getPose() {
+    public Pose2d getPose()
+    {
         return poseEstimator.getEstimatedPosition();
     }
     
@@ -84,7 +88,8 @@ public class DriveSubsystem extends SubsystemBase {
 
     // Periodic
     @Override
-    public void periodic() {
+    public void periodic()
+    {
         // Update Pose Estimate from Swerve Modules
         poseEstimator.update(getHeading(), getModulePositions());
 
@@ -122,23 +127,27 @@ public class DriveSubsystem extends SubsystemBase {
     }
 
     // Get Current Angle from Gyroscope (and invert it)
-    public Rotation2d getHeading() {
+    public Rotation2d getHeading()
+    {
         return Rotation2d.fromDegrees(-gyro.getYaw());
     }
 
     // Resets odometry to a specified pose
-    public void resetOdometry(Pose2d pose) {
+    public void resetOdometry(Pose2d pose)
+    {
         poseEstimator.resetPosition(getHeading(), getModulePositions(), pose);
     }
 
     // Zero heading
-    public void zeroHeading() {
+    public void zeroHeading()
+    {
         gyro.zeroYaw();
         resetOdometry(new Pose2d(getPose().getTranslation(),new Rotation2d()));
     }
 
     // Drive Method
-    public void drive(double forward, double strafe, double rotation, Boolean fieldRelative) {
+    public void drive(double forward, double strafe, double rotation, Boolean fieldRelative)
+    {
         // Convert the commanded speeds into the correct units for the drivetrain, and convert controller left and forward into positive numbers as expected for swerve
         forward = -forward * DriveConstants.kMaxSpeedMetersPerSecond;
         strafe = -strafe * DriveConstants.kMaxSpeedMetersPerSecond;
@@ -163,7 +172,8 @@ public class DriveSubsystem extends SubsystemBase {
     }
 
     // Drive Command
-    public Command driveCommand(CommandXboxController controller, BooleanSupplier fieldRelative){
+    public Command driveCommand(CommandXboxController controller, BooleanSupplier fieldRelative)
+    {
         return Commands.run(
             () -> {
                 double forward = MathUtil.applyDeadband(controller.getLeftY() * DriveConstants.kSpeedLimit, 0.02);
@@ -174,12 +184,14 @@ public class DriveSubsystem extends SubsystemBase {
     } 
 
     // Reset Odometry to Starting Pose 
-    public Command setPoseFromDsCommand() {
+    public Command setPoseFromDsCommand()
+    {
         return Commands.runOnce(() -> resetOdometry(getStartingPose()),this);
     }
 
     // Returns an estimated default Starting Position based on Alliance and Station number
-    public Pose2d getStartingPose() {
+    public Pose2d getStartingPose()
+    {
         Optional<DriverStation.Alliance> allianceOpt = DriverStation.getAlliance();
         int station = DriverStation.getLocation().orElse(2);
         boolean isRed = allianceOpt.isPresent() && allianceOpt.get() == DriverStation.Alliance.Red;

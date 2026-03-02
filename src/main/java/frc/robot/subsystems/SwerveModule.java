@@ -17,7 +17,8 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import frc.robot.subsystems.Constants.ModuleConstants;
 
 @SuppressWarnings("removal")
-public class SwerveModule {
+public class SwerveModule
+{
     private final SparkFlex drivingSparkFlex;
     private final SparkMax turningSparkMax;
 
@@ -30,7 +31,8 @@ public class SwerveModule {
     private double chassisAngularOffset = 0;
     private SwerveModuleState desiredState = new SwerveModuleState(0.0, new Rotation2d());
     
-    public SwerveModule(int drivingCANId, int turningCANId, double thisChassisAngularOffset) {
+    public SwerveModule(int drivingCANId, int turningCANId, double thisChassisAngularOffset)
+    {
         drivingSparkFlex = new SparkFlex(drivingCANId, MotorType.kBrushless);
         turningSparkMax = new SparkMax(turningCANId, MotorType.kBrushless);
 
@@ -45,18 +47,20 @@ public class SwerveModule {
         chassisAngularOffset = thisChassisAngularOffset;
         desiredState.angle = new Rotation2d(turningEncoder.getPosition());
         drivingEncoder.setPosition(0);
-
     }
 
-    public SwerveModuleState getState() {
+    public SwerveModuleState getState()
+    {
         return new SwerveModuleState(drivingEncoder.getVelocity(), new Rotation2d(turningEncoder.getPosition() - chassisAngularOffset));
     }
 
-    public SwerveModulePosition getPosition() {
+    public SwerveModulePosition getPosition()
+    {
         return new SwerveModulePosition(drivingEncoder.getPosition(), new Rotation2d(turningEncoder.getPosition() - chassisAngularOffset));
     }
 
-    public void setDesiredState(SwerveModuleState thisDesiredState) {
+    public void setDesiredState(SwerveModuleState thisDesiredState)
+    {
         SwerveModuleState correctedDesiredState = new SwerveModuleState();
         correctedDesiredState.speedMetersPerSecond = thisDesiredState.speedMetersPerSecond;
         correctedDesiredState.angle = thisDesiredState.angle.plus(Rotation2d.fromRadians(chassisAngularOffset));
@@ -66,7 +70,8 @@ public class SwerveModule {
         desiredState = thisDesiredState;
     }
 
-    public void resetEncoders() {
+    public void resetEncoders()
+    {
         drivingEncoder.setPosition(0);
     }
 }

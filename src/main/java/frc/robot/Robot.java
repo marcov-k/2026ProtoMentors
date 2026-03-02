@@ -8,17 +8,20 @@ import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 
-public class Robot extends TimedRobot {
+public class Robot extends TimedRobot
+{
     private Command m_autonomousCommand;
 
     private final RobotContainer m_robotContainer;
 
-    public Robot() {
+    public Robot()
+    {
         m_robotContainer = new RobotContainer();
     }
 
     @Override
-    public void robotPeriodic() {
+    public void robotPeriodic()
+    {
         CommandScheduler.getInstance().run();
     }
 
@@ -32,14 +35,16 @@ public class Robot extends TimedRobot {
     public void disabledExit() {}
 
     @Override
-    public void autonomousInit() {
+    public void autonomousInit()
+    {
         // Get assumed starting position from Driver Station 
         m_robotContainer.drive.setPoseFromDsCommand().schedule();
 
         // Then proceed with autonomous
         m_autonomousCommand = m_robotContainer.getAutonomousCommand();
-        if (m_autonomousCommand != null) {
-        CommandScheduler.getInstance().schedule(m_autonomousCommand);
+        if (m_autonomousCommand != null)
+        {
+            CommandScheduler.getInstance().schedule(m_autonomousCommand);
         }
     }
 
@@ -50,9 +55,11 @@ public class Robot extends TimedRobot {
     public void autonomousExit() {}
 
     @Override
-    public void teleopInit() {
-        if (m_autonomousCommand != null) {
-        m_autonomousCommand.cancel();
+    public void teleopInit()
+    {
+        if (m_autonomousCommand != null)
+        {
+            m_autonomousCommand.cancel();
         }
 
         // Get assumed starting position - REMOVE THIS BEFORE A MATCH
@@ -66,7 +73,8 @@ public class Robot extends TimedRobot {
     public void teleopExit() {}
 
     @Override
-    public void testInit() {
+    public void testInit()
+    {
         CommandScheduler.getInstance().cancelAll();
     }
 
