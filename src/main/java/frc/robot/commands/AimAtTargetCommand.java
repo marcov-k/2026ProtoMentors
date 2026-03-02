@@ -49,10 +49,10 @@ public class AimAtTargetCommand extends Command {
         double rotCmd = thetaPid.calculate(robotToTarget.getRadians(), 0.0);
 
         drive.drive(
-        fwd.getAsDouble(),
-        strafe.getAsDouble(),
-        rotCmd / DriveConstants.kMaxAngularSpeed, // because your drive() scales rotation by kMaxAngularSpeed
-        fieldRelative.getAsBoolean()
+            fwd.getAsDouble(),
+            strafe.getAsDouble(),
+            rotCmd / DriveConstants.kMaxAngularSpeed, // because your drive() scales rotation by kMaxAngularSpeed
+            fieldRelative.getAsBoolean()
         );
     }
 }

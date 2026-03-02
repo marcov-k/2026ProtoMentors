@@ -5,6 +5,7 @@
 package frc.robot;
 
 import java.util.function.DoubleSupplier;
+import java.util.function.BooleanSupplier;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -30,16 +31,22 @@ public class RobotContainer {
     private void configureBindings() {
         DoubleSupplier fwd = () -> edu.wpi.first.math.MathUtil.applyDeadband(controller.getLeftY() * DriveConstants.kSpeedLimit, 0.02);
         DoubleSupplier str = () -> edu.wpi.first.math.MathUtil.applyDeadband(controller.getLeftX() * DriveConstants.kSpeedLimit, 0.02);
+        BooleanSupplier fieldRel = () -> fieldRelative;
         
         controller.leftTrigger().onTrue(intake.run()).onFalse(intake.stop());
         controller.leftBumper().onTrue(intake.dump()).onFalse(intake.stop());
         controller.rightTrigger().onTrue(launcher.run()).onFalse(launcher.stop());
         controller.rightBumper().whileTrue(
             Commands.parallel(
-                new AimAtTargetCommand(drive, fwd, str, () -> fieldRelative, AllianceUtil::getAllianceHubCenter),
+                new AimAtTargetCommand(drive, fwd, str, fieldRel, AllianceUtil::getAllianceHubCenter),
                 new AutoRPMFromDistanceCommand(drive, launcher, AllianceUtil::getAllianceHubCenter)
             )
-        );    
+        );
+        controller.b().whileTrue(
+            Commands.sequence(
+                new DriveToTargetCommand(drive, fieldRel, AllianceUtil::getAllianceLaunchPos)
+            )
+        );
         controller.a().onTrue(Commands.runOnce(drive::zeroHeading, drive));    
         controller.start().onTrue(toggleFieldRelative());
     }

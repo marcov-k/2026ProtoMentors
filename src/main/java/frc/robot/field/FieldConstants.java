@@ -9,6 +9,10 @@ public final class FieldConstants {
     public static final Translation2d BLUE_HUB_CENTER = new Translation2d( 4.73, 4.25);
     public static final Translation2d RED_HUB_CENTER = new Translation2d(11.81,4.25);
 
+    // TODO: determine launch positions, add multiple launch positions to choose from
+    public static final Translation2d BLUE_LAUNCH_POS = new Translation2d();
+    public static final Translation2d RED_LAUNCH_POS = new Translation2d();
+
     public static final Translation2d BLUE_TOWER_CENTER = new Translation2d(1.03, 3.73);
     public static final Translation2d RED_TOWER_CENTER = new Translation2d(15.48, 4.31);
         
