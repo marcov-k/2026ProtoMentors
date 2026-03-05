@@ -30,21 +30,20 @@ public class DriveToTargetCommand extends Command
     @Override
     public void execute()
     {
-        // TODO: add support for driving to target when not in field relative
+        // TODO: add support for driving to target when not in field relative?
 
         Pose2d pose = drive.getPose();
         Translation2d target = targetSupplier.get();
         Translation2d delta = target.minus(pose.getTranslation());
 
-        double dist = delta.getNorm();
-        if (dist > kMinDist)
+        if (delta.getNorm() > kMinDist)
         {
-            Translation2d input = delta.div(dist); // turn delta into a unit vector
-
-            double fwd = posPID.calculate(input.getX());
+            double fwd = posPID.calculate(delta.getX());
+            fwd = Math.min(fwd, 1); // clamp input to between 0 and 1
             fwd = (AllianceUtil.isRed()) ? -fwd : fwd;
 
-            double strafe = posPID.calculate(input.getY());
+            double strafe = posPID.calculate(delta.getY());
+            strafe = Math.min(strafe, 1); // clamp input to between 0 and 1
             strafe = (AllianceUtil.isRed()) ? strafe : -strafe;
 
             drive.drive(
