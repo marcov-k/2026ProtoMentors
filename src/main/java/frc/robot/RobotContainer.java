@@ -49,7 +49,7 @@ public class RobotContainer
 
         controller.b().whileTrue(
             Commands.sequence(
-                new DriveToTargetCommand(drive, fieldRel, AllianceUtil::getAllianceLaunchPos)
+                new DriveToTargetCommand(drive, AllianceUtil::getAllianceLaunchPos)
             )
         );
 
