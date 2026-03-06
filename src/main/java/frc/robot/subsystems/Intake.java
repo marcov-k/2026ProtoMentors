@@ -16,13 +16,13 @@ public class Intake extends SubsystemBase{
 
     private static SparkMaxConfig DefaultConfig = new SparkMaxConfig();    
     private SparkMax IntakeMotor;     
-    public static final int kIntakeMotorCanID = 9;
+    public static final int kIntakeMotorCanID = 13;
 
     static {
         DefaultConfig.smartCurrentLimit(50);
         DefaultConfig.idleMode(IdleMode.kCoast);
         DefaultConfig.openLoopRampRate(1.0);
-        DefaultConfig.inverted(false);
+        DefaultConfig.inverted(true);
     }
 
     public Intake() {
@@ -31,12 +31,12 @@ public class Intake extends SubsystemBase{
     }
 
     public Command run() {
-        return Commands.runOnce(() -> IntakeMotor.set(1.0));
+        return Commands.runOnce(() -> IntakeMotor.set(.50));
     }
 
 
     public Command dump() {
-        return Commands.runOnce(() -> IntakeMotor.set(-1.0));
+        return Commands.runOnce(() -> IntakeMotor.set(-.50));
     }
     public Command stop() {
         return Commands.runOnce(() -> IntakeMotor.stopMotor());
