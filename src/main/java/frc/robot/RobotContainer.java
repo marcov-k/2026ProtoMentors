@@ -19,6 +19,7 @@ public class RobotContainer {
   public final DriveSubsystem drive = new DriveSubsystem();
   public final Intake intake = new Intake();
   public final Launcher launcher = new Launcher();
+  public final Climber climber = new Climber();
   private final CommandXboxController controller = new CommandXboxController(0);
   private Boolean fieldRelative = true;
 
@@ -35,6 +36,8 @@ public class RobotContainer {
     
     controller.leftTrigger().onTrue(intake.run()).onFalse(intake.stop());
     controller.leftBumper().onTrue(intake.dump()).onFalse(intake.stop());
+    controller.povUp().onTrue(climber.raise()).onFalse(climber.stop());
+    controller.povDown().onTrue(climber.lower()).onFalse(climber.stop());
     controller.rightTrigger().onTrue(launcher.run()).onFalse(launcher.stop());
     controller.rightBumper().whileTrue(
       Commands.parallel(
