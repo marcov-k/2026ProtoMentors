@@ -21,10 +21,12 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 public class Launcher extends SubsystemBase{
 
     private static SparkMaxConfig DefaultConfig = new SparkMaxConfig();    
-    private SparkMax LaunchMotor;     
+    private SparkMax LaunchMotor; 
+    private SparkMax PreLaunchMotor;    
     private SparkMax HopperMotor;
-    public static final int kHopperMotorCanID = 10;
-    public static final int kLaunchMotorCanID = 11;
+    public static final int kHopperMotorCanID = 9;
+    public static final int kPreLaunchMotorCanID = 12;
+    public static final int kLaunchMotorCanID = 10;
     private SparkClosedLoopController LaunchController;
     private RelativeEncoder launchEncoder;
     private double targetRpm = 0.0;
@@ -41,6 +43,8 @@ public class Launcher extends SubsystemBase{
     public Launcher() {
         LaunchMotor = new SparkMax(kLaunchMotorCanID, MotorType.kBrushless);
         LaunchMotor.configure(DefaultConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
+        PreLaunchMotor = new SparkMax(kPreLaunchMotorCanID, MotorType.kBrushless);
+        PreLaunchMotor.configure(DefaultConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
         HopperMotor = new SparkMax(kHopperMotorCanID, MotorType.kBrushless);
         HopperMotor.configure(DefaultConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
         LaunchController = LaunchMotor.getClosedLoopController();
@@ -84,22 +88,24 @@ public class Launcher extends SubsystemBase{
         return Commands.sequence(
             Commands.runOnce(() -> LaunchController.setSetpoint(velocity, ControlType.kVelocity, ClosedLoopSlot.kSlot0)),
             Commands.waitUntil(() -> LaunchController.isAtSetpoint()),
+            Commands.runOnce(() -> PreLaunchMotor.set(0.65)),
             Commands.runOnce(() -> HopperMotor.set(.5))
         );   
     }
 
     public Command run() {
         return Commands.sequence(
-            Commands.runOnce(() -> LaunchMotor.set(.75)),
-            Commands.runOnce(() -> LaunchMotor.setVoltage(10)),
+            Commands.runOnce(() -> LaunchMotor.setVoltage(6.5)),
             Commands.waitSeconds(1.0),
-            Commands.runOnce(() -> HopperMotor.set(.3))
+            Commands.runOnce(() -> PreLaunchMotor.set(0.6)),
+            Commands.runOnce(() -> HopperMotor.set(.75))
         );
     }
 
     public Command stop() {
         return Commands.runOnce(() -> {
             HopperMotor.stopMotor(); 
+            PreLaunchMotor.stopMotor();
             LaunchMotor.stopMotor();
         });
     }
