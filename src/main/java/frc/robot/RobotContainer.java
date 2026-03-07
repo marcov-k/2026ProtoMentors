@@ -8,6 +8,7 @@ import java.util.function.DoubleSupplier;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.field.AllianceUtil;
 import frc.robot.subsystems.*;
@@ -26,12 +27,12 @@ public class RobotContainer {
   public RobotContainer() {
     configureBindings();
     drive.setDefaultCommand(drive.driveCommand(controller, () -> fieldRelative));    
-    launcher.setDefaultCommand(Commands.run(launcher::stopAll, launcher));
+    // launcher.setDefaultCommand(Commands.run(launcher::stopAll, launcher));
   }
 
   private void configureBindings() {
-    DoubleSupplier fwd = () -> edu.wpi.first.math.MathUtil.applyDeadband(controller.getLeftY() * DriveSubsystem.kSpeedLimit, 0.02);
-    DoubleSupplier str = () -> edu.wpi.first.math.MathUtil.applyDeadband(controller.getLeftX() * DriveSubsystem.kSpeedLimit, 0.02);
+    // DoubleSupplier fwd = () -> edu.wpi.first.math.MathUtil.applyDeadband(controller.getLeftY() * DriveSubsystem.kSpeedLimit, 0.01);
+    // DoubleSupplier str = () -> edu.wpi.first.math.MathUtil.applyDeadband(controller.getLeftX() * DriveSubsystem.kSpeedLimit, 0.01);
 
     
     controller.leftTrigger().onTrue(intake.run()).onFalse(intake.stop());
@@ -39,21 +40,21 @@ public class RobotContainer {
     controller.povUp().onTrue(climber.raise()).onFalse(climber.stop());
     controller.povDown().onTrue(climber.lower()).onFalse(climber.stop());
     controller.rightTrigger().onTrue(launcher.run()).onFalse(launcher.stop());
+    /*   
     controller.rightBumper().whileTrue(
       Commands.parallel(
         new AimAtTargetCommand(drive, fwd, str, () -> fieldRelative, AllianceUtil::getAllianceHubCenter),
         new AutoRPMFromDistanceCommand(drive, launcher, AllianceUtil::getAllianceHubCenter)
       )
-    );    
+    );  
+    */
     controller.a().onTrue(Commands.runOnce(drive::zeroHeading, drive));    
-    controller.start().onTrue(toggleFieldRelative());
+    controller.start().onTrue(new InstantCommand(() -> fieldRelative = !fieldRelative));
   }
 
   public Command getAutonomousCommand() {
     return Commands.print("No autonomous command configured");
   }
 
-  public Command toggleFieldRelative() {
-    return Commands.runOnce(() -> {this.fieldRelative = !this.fieldRelative;});
-  }
+
 }
