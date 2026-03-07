@@ -46,6 +46,7 @@ public class DriveSubsystem extends SubsystemBase {
     
     // Speed Limit
     public static double kSpeedLimit = 0.5;
+    public static final double kControllerDeadband = 0.05;
 
     // SPARK MAX CAN IDs - Driving Motors
     public static final int kFrontLeftDrivingCanId = 2;
@@ -205,9 +206,9 @@ public class DriveSubsystem extends SubsystemBase {
     public Command driveCommand(CommandXboxController controller, BooleanSupplier fieldRelative){
         return Commands.run(
             () -> {
-                double forward = MathUtil.applyDeadband(controller.getLeftY() * kSpeedLimit, 0.02);
-                double strafe = MathUtil.applyDeadband(controller.getLeftX() * kSpeedLimit, 0.02);
-                double rotate = MathUtil.applyDeadband(controller.getRightX() * kSpeedLimit, 0.02);
+                double forward = MathUtil.applyDeadband(controller.getLeftY(), kControllerDeadband) * kSpeedLimit;
+                double strafe = MathUtil.applyDeadband(controller.getLeftX(), kControllerDeadband) * kSpeedLimit;
+                double rotate = MathUtil.applyDeadband(controller.getRightX(), kControllerDeadband) * kSpeedLimit;
                 this.drive(forward, strafe, rotate, fieldRelative.getAsBoolean());
             }
         , this);
