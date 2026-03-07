@@ -31,7 +31,7 @@ public class AutoRPMFromDistanceCommand extends Command {
     double distance = target.minus(pose.getTranslation()).getNorm();
 
     double rpm = ShooterMap.rpmForDistance(distance);
-    launcher.setTargetRpm(rpm);
+    // launcher.setTargetRpm(rpm);
 
     SmartDashboard.putNumber("Aim/DistanceMeters", distance);
     SmartDashboard.putNumber("Shooter/DistanceRPM", rpm);

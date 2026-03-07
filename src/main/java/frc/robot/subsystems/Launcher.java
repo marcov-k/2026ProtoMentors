@@ -47,33 +47,33 @@ public class Launcher extends SubsystemBase{
         PreLaunchMotor.configure(DefaultConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
         HopperMotor = new SparkMax(kHopperMotorCanID, MotorType.kBrushless);
         HopperMotor.configure(DefaultConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
-        LaunchController = LaunchMotor.getClosedLoopController();
-        launchEncoder = LaunchMotor.getEncoder();
+        // LaunchController = LaunchMotor.getClosedLoopController();
+        // launchEncoder = LaunchMotor.getEncoder();
     }
 
     @Override
     public void periodic() {
         SmartDashboard.putNumber("Shooter/TargetRPM", targetRpm);
-        SmartDashboard.putNumber("Shooter/ActualRPM", getActualRpm());
-        SmartDashboard.putBoolean("Shooter/AtSetpoint", atSetpoint());
+        // SmartDashboard.putNumber("Shooter/ActualRPM", getActualRpm());
+        // SmartDashboard.putBoolean("Shooter/AtSetpoint", atSetpoint());
     }
 
-    public void setTargetRpm(double rpm) {
+/*     public void setTargetRpm(double rpm) {
         targetRpm = rpm;
         LaunchController.setSetpoint(rpm, ControlType.kVelocity, ClosedLoopSlot.kSlot0);
-    }
+    } */
 
     public double getTargetRpm() {
         return targetRpm;
     }
 
-    public double getActualRpm() {
+/*     public double getActualRpm() {
         return launchEncoder.getVelocity(); // RPM
-    }
+    } */
 
-    public boolean atSetpoint() {
+/*     public boolean atSetpoint() {
         return LaunchController.isAtSetpoint(); // +/- 100 RPM error 
-    }
+    } */
 
     public void setHopper(double power) {
         HopperMotor.set(power);
@@ -81,22 +81,23 @@ public class Launcher extends SubsystemBase{
 
     public void stopAll() {
         HopperMotor.stopMotor();
+        PreLaunchMotor.stopMotor();
         LaunchMotor.stopMotor();
     }
 
-    public Command runAtSpeed(double velocity) {      
+/*     public Command runAtSpeed(double velocity) {      
         return Commands.sequence(
             Commands.runOnce(() -> LaunchController.setSetpoint(velocity, ControlType.kVelocity, ClosedLoopSlot.kSlot0)),
             Commands.waitUntil(() -> LaunchController.isAtSetpoint()),
             Commands.runOnce(() -> PreLaunchMotor.set(0.65)),
             Commands.runOnce(() -> HopperMotor.set(.5))
         );   
-    }
+    } */
 
     public Command run() {
         return Commands.sequence(
             Commands.runOnce(() -> LaunchMotor.setVoltage(6.5)),
-            Commands.waitSeconds(1.0),
+            Commands.waitSeconds(1.0), 
             Commands.runOnce(() -> PreLaunchMotor.set(0.6)),
             Commands.runOnce(() -> HopperMotor.set(.75))
         );
