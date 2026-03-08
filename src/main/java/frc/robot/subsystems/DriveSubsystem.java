@@ -11,6 +11,7 @@ import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import frc.robot.field.AllianceUtil;
 import frc.robot.field.FieldConstants;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -40,6 +41,9 @@ public class DriveSubsystem extends SubsystemBase {
     private boolean visionLocked;
 
     private final Field2d field = new Field2d();
+    private final Field2d visionfield = new Field2d();
+    Pose2d lastVisionPose;
+
 
     // Declare NavX AHRS Gyroscope
     private final AHRS gyro = new AHRS(AHRS.NavXComType.kMXP_SPI);
@@ -83,7 +87,7 @@ public class DriveSubsystem extends SubsystemBase {
 
     // Drive Subsystem Constructor
     public DriveSubsystem() {
-        gyro.zeroYaw();
+        
 
         // Create a Pose Estimator Object
         poseEstimator = new SwerveDrivePoseEstimator(
@@ -100,6 +104,7 @@ public class DriveSubsystem extends SubsystemBase {
         visionLocked = false;
 
         SmartDashboard.putData("Field", field);
+        SmartDashboard.putData("VisionField", visionfield);
     }
 
     private SwerveModulePosition[] getModulePositions() {
@@ -117,7 +122,7 @@ public class DriveSubsystem extends SubsystemBase {
 
     
     public void teleopInit() {
-
+        visionLocked = false;
     }
 
     // Periodic
@@ -134,6 +139,8 @@ public class DriveSubsystem extends SubsystemBase {
             // Get Pose from Vision and Swerve
             Pose2d current = poseEstimator.getEstimatedPosition();
             Pose2d visionPose = m.pose();
+            lastVisionPose = visionPose;
+            visionfield.setRobotPose(visionPose);
 
             // Compare them
             double delta = current.getTranslation().getDistance(visionPose.getTranslation());
@@ -149,10 +156,11 @@ public class DriveSubsystem extends SubsystemBase {
 
             // Integrate vision pose into Swerve Pose
             poseEstimator.addVisionMeasurement(visionPose, m.timestampSeconds());
+            
         });
 
         // Update SmartDashboard with pose
-        field.setRobotPose(getPose());
+        field.setRobotPose(getPose());        
         SmartDashboard.putNumber("Pose X (m)", getPose().getX());
         SmartDashboard.putNumber("Pose Y (m)", getPose().getY());
         SmartDashboard.putNumber("Pose Heading (deg)", getHeading().getDegrees());
@@ -172,6 +180,7 @@ public class DriveSubsystem extends SubsystemBase {
     // Zero heading
     public void zeroHeading() {
         gyro.zeroYaw();
+        visionLocked = false;
         resetOdometry(new Pose2d(getPose().getTranslation(),new Rotation2d()));
     }
 
@@ -216,37 +225,14 @@ public class DriveSubsystem extends SubsystemBase {
 
     // Reset Odometry to Starting Pose 
     public Command setPoseFromDsCommand() {
-        return Commands.runOnce(() -> resetOdometry(getStartingPose()),this);
+        return Commands.runOnce(() -> resetOdometry(AllianceUtil.getStartingPose()),this);
     }
 
-    // Returns an estimated default Starting Position based on Alliance and Station number
-    public Pose2d getStartingPose() {
-        Optional<DriverStation.Alliance> allianceOpt = DriverStation.getAlliance();
-        int station = DriverStation.getLocation().orElse(2);
-        boolean isRed = allianceOpt.isPresent() && allianceOpt.get() == DriverStation.Alliance.Red;
-        Pose2d startingPose = new Pose2d();
-        visionLocked = false;
-
-        if (!isRed) {
-            // BLUE side
-            switch (station) {
-                case 1: startingPose = FieldConstants.StartingPositions.BLUE_STATION_1; break;
-                case 2: startingPose = FieldConstants.StartingPositions.BLUE_STATION_2; break;
-                case 3: startingPose = FieldConstants.StartingPositions.BLUE_STATION_3; break;
-                default: startingPose = FieldConstants.StartingPositions.BLUE_STATION_1;
-            }
-
-        } else {
-            // RED side
-            switch (station) {
-                case 1: startingPose = FieldConstants.StartingPositions.RED_STATION_1; break;
-                case 2: startingPose = FieldConstants.StartingPositions.RED_STATION_2; break;
-                case 3: startingPose = FieldConstants.StartingPositions.RED_STATION_3; break;
-                default: startingPose = FieldConstants.StartingPositions.RED_STATION_1;
-            }
-        }
-        
-        return startingPose;
+    public void setPoseFromVision() {
+        resetOdometry(lastVisionPose);
+        return; 
     }
+
+
 
 }
