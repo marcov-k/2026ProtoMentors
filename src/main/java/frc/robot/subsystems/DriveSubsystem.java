@@ -12,17 +12,12 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.field.AllianceUtil;
-import frc.robot.field.FieldConstants;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-
-import java.util.Optional;
 import java.util.function.BooleanSupplier;
-
 import com.studica.frc.AHRS;
 
 public class DriveSubsystem extends SubsystemBase {

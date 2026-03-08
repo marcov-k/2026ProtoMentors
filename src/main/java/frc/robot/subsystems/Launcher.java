@@ -2,9 +2,7 @@ package frc.robot.subsystems;
 
 import java.util.function.DoubleSupplier;
 
-import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.ClosedLoopSlot;
-import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
@@ -14,7 +12,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
-import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
@@ -29,8 +26,7 @@ public class Launcher extends SubsystemBase{
     public static final int kHopperMotorCanID = 9;
     public static final int kPreLaunchMotorCanID = 12;
     public static final int kLaunchMotorCanID = 10;
-    private SparkClosedLoopController LaunchController;
-    private RelativeEncoder launchEncoder;
+
     private double targetRpm = 0.0;
     private double targetVoltage = 5.0;
     private DoubleSupplier targetVoltageSupplier;
