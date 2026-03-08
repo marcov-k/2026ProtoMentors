@@ -31,15 +31,18 @@ public class RobotContainer {
   }
 
   private void configureBindings() {
-    // DoubleSupplier fwd = () -> edu.wpi.first.math.MathUtil.applyDeadband(controller.getLeftY() * DriveSubsystem.kSpeedLimit, 0.01);
-    // DoubleSupplier str = () -> edu.wpi.first.math.MathUtil.applyDeadband(controller.getLeftX() * DriveSubsystem.kSpeedLimit, 0.01);
+    DoubleSupplier fwd = () -> edu.wpi.first.math.MathUtil.applyDeadband(controller.getLeftY() * DriveSubsystem.kSpeedLimit, 0.01);
+    DoubleSupplier str = () -> edu.wpi.first.math.MathUtil.applyDeadband(controller.getLeftX() * DriveSubsystem.kSpeedLimit, 0.01);
 
     
     controller.leftTrigger().onTrue(intake.run()).onFalse(intake.stop());
     controller.leftBumper().onTrue(intake.dump()).onFalse(intake.stop());
     controller.povUp().onTrue(climber.raise()).onFalse(climber.stop());
     controller.povDown().onTrue(climber.lower()).onFalse(climber.stop());
+    controller.povRight().whileTrue(launcher.increaseLaunchVoltage());
+    controller.povLeft().whileTrue(launcher.decreaseLaunchVoltage());
     controller.rightTrigger().onTrue(launcher.run()).onFalse(launcher.stop());
+    controller.rightBumper().whileTrue(new AimAtTargetCommand(drive, fwd, str, ()-> fieldRelative, AllianceUtil::getAllianceHubCenter));
     /*   
     controller.rightBumper().whileTrue(
       Commands.parallel(
@@ -48,12 +51,26 @@ public class RobotContainer {
       )
     );  
     */
-    controller.a().onTrue(Commands.runOnce(drive::zeroHeading, drive));    
+    
+    controller.y().onTrue(Commands.runOnce(drive::setPoseFromVision)); 
+    controller.back().onTrue(Commands.runOnce(drive::zeroHeading, drive));   
     controller.start().onTrue(new InstantCommand(() -> fieldRelative = !fieldRelative));
   }
 
   public Command getAutonomousCommand() {
-    return Commands.print("No autonomous command configured");
+    return Commands.sequence(
+      Commands.print("Driving to Firing Pose"),
+      new DriveToTargetCommand(drive, AllianceUtil::getAutonomousFiringPosition),
+      Commands.print("Reset pose from vision"),
+      Commands.runOnce(() -> drive.setPoseFromVision()),
+      Commands.print("Aim at Target"),
+      new AimAtTargetCommand(drive, () -> 0, () -> 0, () -> true, AllianceUtil::getAllianceHubCenter),
+      Commands.print("Fire"),
+      launcher.run(),
+      Commands.waitSeconds(5),
+      Commands.print("Cease Fire"),
+      launcher.stop()
+    );
   }
 
 
