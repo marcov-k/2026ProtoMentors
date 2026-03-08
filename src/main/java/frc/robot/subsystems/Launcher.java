@@ -1,5 +1,7 @@
 package frc.robot.subsystems;
 
+import java.util.function.DoubleSupplier;
+
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.ClosedLoopSlot;
 import com.revrobotics.spark.SparkClosedLoopController;
@@ -30,6 +32,10 @@ public class Launcher extends SubsystemBase{
     private SparkClosedLoopController LaunchController;
     private RelativeEncoder launchEncoder;
     private double targetRpm = 0.0;
+    private double targetVoltage = 5.0;
+    private DoubleSupplier targetVoltageSupplier;
+    private Intake intake = new Intake();
+    
 
     static {
         DefaultConfig.smartCurrentLimit(50);
@@ -49,11 +55,12 @@ public class Launcher extends SubsystemBase{
         HopperMotor.configure(DefaultConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
         // LaunchController = LaunchMotor.getClosedLoopController();
         // launchEncoder = LaunchMotor.getEncoder();
+        targetVoltageSupplier = ()-> targetVoltage;
     }
 
     @Override
-    public void periodic() {
-        SmartDashboard.putNumber("Shooter/TargetRPM", targetRpm);
+    public void periodic() {        
+        SmartDashboard.putNumber("Shooter/TargetRPM", targetVoltage);
         // SmartDashboard.putNumber("Shooter/ActualRPM", getActualRpm());
         // SmartDashboard.putBoolean("Shooter/AtSetpoint", atSetpoint());
     }
@@ -65,6 +72,15 @@ public class Launcher extends SubsystemBase{
 
     public double getTargetRpm() {
         return targetRpm;
+    }
+
+
+    public Command increaseLaunchVoltage() {
+        return Commands.runOnce(() -> targetVoltage = Math.min(targetVoltage + .1, 12.0));
+    }
+
+    public Command decreaseLaunchVoltage() {
+        return Commands.runOnce(() -> targetVoltage = Math.max(targetVoltage - .1, 3.0));
     }
 
 /*     public double getActualRpm() {
@@ -96,10 +112,12 @@ public class Launcher extends SubsystemBase{
 
     public Command run() {
         return Commands.sequence(
-            Commands.runOnce(() -> LaunchMotor.setVoltage(6.5)),
+            Commands.runOnce(() -> LaunchMotor.setVoltage(targetVoltageSupplier.getAsDouble())),
             Commands.waitSeconds(1.0), 
-            Commands.runOnce(() -> PreLaunchMotor.set(0.6)),
-            Commands.runOnce(() -> HopperMotor.set(.75))
+            Commands.runOnce(() -> PreLaunchMotor.setVoltage(targetVoltageSupplier.getAsDouble())),
+            Commands.runOnce(() -> HopperMotor.setVoltage(targetVoltageSupplier.getAsDouble())), 
+            Commands.waitSeconds(0.50),
+            Commands.runOnce(() -> intake.run())
         );
     }
 
@@ -108,6 +126,7 @@ public class Launcher extends SubsystemBase{
             HopperMotor.stopMotor(); 
             PreLaunchMotor.stopMotor();
             LaunchMotor.stopMotor();
+            intake.stop();
         });
     }
 }
