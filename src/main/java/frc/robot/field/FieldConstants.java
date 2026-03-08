@@ -21,4 +21,13 @@ public final class FieldConstants {
         public static final Pose2d RED_STATION_2 = new Pose2d(new Translation2d(12.56,4.0),Rotation2d.fromDegrees(180));
         public static final Pose2d RED_STATION_3 = new Pose2d(new Translation2d(12.56,5.7),Rotation2d.fromDegrees(180));
     }
+
+    public final class AutoFiringPositions {
+        public static final Translation2d BLUE_STATION_1 = new Translation2d(3.5,2.3);
+        public static final Translation2d BLUE_STATION_2 = new Translation2d(3.5,4.0);
+        public static final Translation2d BLUE_STATION_3 = new Translation2d(3.5,5.7);
+        public static final Translation2d RED_STATION_1 = new Translation2d(13.06,2.3);
+        public static final Translation2d RED_STATION_2 = new Translation2d(13.06,4.0);
+        public static final Translation2d RED_STATION_3 = new Translation2d(13.06,5.7);
+    }
 }
