@@ -44,17 +44,7 @@ public class RobotContainer {
     controller.povLeft().whileTrue(launcher.decreaseLaunchVoltage());
     controller.rightTrigger().onTrue(launcher.run()).onFalse(launcher.stop());
     controller.rightBumper().whileTrue(new AimAtTargetCommand(drive, fwd, str, ()-> fieldRelative, AllianceUtil::getAllianceHubCenter));
-    /*   
-    controller.rightBumper().whileTrue(
-      Commands.parallel(
-        new AimAtTargetCommand(drive, fwd, str, () -> fieldRelative, AllianceUtil::getAllianceHubCenter),
-        new AutoRPMFromDistanceCommand(drive, launcher, AllianceUtil::getAllianceHubCenter)
-      )
-    );  
-    */
-    
-    controller.y().onTrue(Commands.runOnce(drive::setPoseFromVision)); 
-    controller.back().onTrue(Commands.runOnce(drive::zeroHeading, drive));   
+    controller.y().onTrue(Commands.runOnce(drive::setPoseFromVision));       
     controller.start().onTrue(new InstantCommand(() -> fieldRelative = !fieldRelative));
   }
 

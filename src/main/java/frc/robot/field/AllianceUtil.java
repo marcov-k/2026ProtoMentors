@@ -78,9 +78,10 @@ public class AllianceUtil {
         return firingPose;
     }
 
-    public boolean isRed() {
-        Optional<DriverStation.Alliance> allianceOpt = DriverStation.getAlliance();        
-        return allianceOpt.get() == DriverStation.Alliance.Red;
+    public static boolean isRed() {
+        return DriverStation.getAlliance()
+            .map(a -> a == DriverStation.Alliance.Red)
+            .orElse(false);
     }
 
 }

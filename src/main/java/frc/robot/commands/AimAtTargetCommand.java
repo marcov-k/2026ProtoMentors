@@ -1,5 +1,9 @@
 package frc.robot.commands;
 
+import java.util.function.BooleanSupplier;
+import java.util.function.DoubleSupplier;
+import java.util.function.Supplier;
+
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -7,68 +11,76 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.DriveSubsystem;
 
-import java.util.function.Supplier;
-import java.util.function.BooleanSupplier;
-import java.util.function.DoubleSupplier;
-
 public class AimAtTargetCommand extends Command {
-  private final DriveSubsystem drive;
-  private final DoubleSupplier fwd;
-  private final DoubleSupplier strafe;
-  static final double kMinDist = 3.0;
-  private final BooleanSupplier fieldRelative;
-  private final Supplier<Translation2d> targetSupplier;
-  private final PIDController thetaPid = new PIDController(4.0, 0.0, 0.2); // tune
-  
+    private final DriveSubsystem drive;
+    private final DoubleSupplier fwd;
+    private final DoubleSupplier strafe;
+    private final BooleanSupplier fieldRelative;
+    private final Supplier<Translation2d> targetSupplier;
 
-  public AimAtTargetCommand(DriveSubsystem drive,
-                            DoubleSupplier fwd,
-                            DoubleSupplier strafe,
-                            BooleanSupplier fieldRelative,
-                            Supplier<Translation2d> targetSupplier) {
-    this.drive = drive;
-    this.fwd = fwd;
-    this.strafe = strafe;
-    this.fieldRelative = fieldRelative;
-    this.targetSupplier = targetSupplier;
+    private final PIDController thetaPid = new PIDController(4.0, 0.0, 0.2);
 
-    addRequirements(drive);
+    public AimAtTargetCommand(
+            DriveSubsystem drive,
+            DoubleSupplier fwd,
+            DoubleSupplier strafe,
+            BooleanSupplier fieldRelative,
+            Supplier<Translation2d> targetSupplier) {
+        this.drive = drive;
+        this.fwd = fwd;
+        this.strafe = strafe;
+        this.fieldRelative = fieldRelative;
+        this.targetSupplier = targetSupplier;
 
-    thetaPid.enableContinuousInput(-Math.PI, Math.PI);
-    thetaPid.setTolerance(Math.toRadians(2.0)); // “good enough” aim
-  }
+        addRequirements(drive);
 
-  @Override
-  public void execute() {
-    Pose2d pose = drive.getPose();
-    Translation2d target = targetSupplier.get();
-    Translation2d delta = target.minus(pose.getTranslation());
-    
-    Rotation2d bearingField = new Rotation2d(Math.atan2(delta.getY(), delta.getX()));
-    Rotation2d robotToTarget = bearingField.minus(pose.getRotation());
-    double rotCmd = thetaPid.calculate(robotToTarget.getRadians(), 0.0);
+        thetaPid.enableContinuousInput(-Math.PI, Math.PI);
+        thetaPid.setTolerance(Math.toRadians(1.0));
+    }
 
-    drive.drive(
-      fwd.getAsDouble(),
-      strafe.getAsDouble(),
-      rotCmd / DriveSubsystem.kMaxAngularSpeed, // because your drive() scales rotation by kMaxAngularSpeed
-      fieldRelative.getAsBoolean()
-    );
-  }
+    @Override
+    public void initialize() {
+        thetaPid.reset();
+    }
 
-  @Override
-  public void end(boolean interrupted)
-  {
-      drive.drive(fwd.getAsDouble(), strafe.getAsDouble(),0,true);
-  }
+    @Override
+    public void execute() {
+        Pose2d shooterPose = drive.getShooterPose();
+        Translation2d target = targetSupplier.get();
 
-  @Override
-  public boolean isFinished()
-  {
-      Pose2d pose = drive.getPose();
-      Translation2d target = targetSupplier.get();
-      return target.minus(pose.getTranslation()).getNorm() <= kMinDist;
-  }
+        // Vector from actual launch point to target
+        Translation2d toTarget = target.minus(shooterPose.getTranslation());
 
+        // Desired field-facing angle for the shooter/robot
+        Rotation2d desiredFieldHeading = toTarget.getAngle();
+
+        // Current shooter heading is same as robot heading here
+        Rotation2d currentFieldHeading = shooterPose.getRotation();
+
+        double rotCmdRadPerSec = thetaPid.calculate(
+            currentFieldHeading.getRadians(),
+            desiredFieldHeading.getRadians()
+        );
+
+        drive.drive(
+            fwd.getAsDouble(),
+            strafe.getAsDouble(),
+            rotCmdRadPerSec / DriveSubsystem.kMaxAngularSpeed,
+            fieldRelative.getAsBoolean()
+        );
+    }
+
+    @Override
+    public void end(boolean interrupted) {
+        drive.drive(fwd.getAsDouble(), strafe.getAsDouble(), 0.0, fieldRelative.getAsBoolean());
+    }
+
+    @Override
+    public boolean isFinished() {
+        return false;
+    }
+
+    public boolean atGoal() {
+        return thetaPid.atSetpoint();
+    }
 }
-

@@ -27,10 +27,7 @@ public class VisionSubsystem extends SubsystemBase {
     private final String cameraName = "FrontLeftCamera";
 
     
-    // TODO: Replace with your actual robot-to-camera transform (meters, radians).
-    // Coordinate convention: +X forward, +Y left, +Z up (WPILib).
-    // Example: new Transform3d(new Translation3d(0.30, 0.00, 0.55), new Rotation3d(0, Units.degreesToRadians(-15), 0))
-    private final Transform3d robotToCamera = new Transform3d(new Translation3d(0.30, 0.0, 0.55), new Rotation3d(0, Units.degreesToRadians(0), 0));
+    private final Transform3d robotToCamera = new Transform3d(new Translation3d(0.38, -0.07, 0.45), new Rotation3d(0, Units.degreesToRadians(0), 0));
 
     // Optional: keep latest raw vision pose for dashboard
     private Optional<EstimatedRobotPose> lastEstimatedPose = Optional.empty();

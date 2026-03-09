@@ -8,11 +8,8 @@ import frc.robot.field.AllianceUtil;
 public class LEDSubsystem extends SubsystemBase{
     private final AddressableLED led;
     private final AddressableLEDBuffer buffer;
-
     private int ledlength = 130;
     private int ledpwmport = 0;
-
-    AllianceUtil alliance;
 
     public LEDSubsystem() {
         led = new AddressableLED(ledpwmport);
@@ -31,9 +28,8 @@ public class LEDSubsystem extends SubsystemBase{
         led.setData(buffer);
     }
 
-    public void autonomousInit() {
-        alliance = new AllianceUtil();
-        if (alliance.isRed()) {
+    public void autonomousInit() {        
+        if (AllianceUtil.isRed()) {
             fillColor(255, 0,0);
         } 
         else {
@@ -41,9 +37,8 @@ public class LEDSubsystem extends SubsystemBase{
         }
     }    
 
-    public void teleopInit() {
-        alliance = new AllianceUtil();
-        if (alliance.isRed()) {
+    public void teleopInit() {        
+        if (AllianceUtil.isRed()) {
             fillColor(255, 0,0);
         } 
         else {

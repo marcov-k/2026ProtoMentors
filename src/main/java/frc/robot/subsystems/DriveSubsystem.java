@@ -3,6 +3,7 @@ package frc.robot.subsystems;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
@@ -31,6 +32,8 @@ public class DriveSubsystem extends SubsystemBase {
     
 
     private final SwerveDrivePoseEstimator poseEstimator;
+    private Rotation2d gyroFieldOffset = new Rotation2d();
+
     private final VisionSubsystem vision = new VisionSubsystem();
 
     private boolean visionLocked;
@@ -103,13 +106,14 @@ public class DriveSubsystem extends SubsystemBase {
     }
 
     private SwerveModulePosition[] getModulePositions() {
-    return new SwerveModulePosition[] {
-        frontLeft.getPosition(),
-        frontRight.getPosition(),
-        rearLeft.getPosition(),
-        rearRight.getPosition()
-    };
-}
+        return new SwerveModulePosition[] {
+            frontLeft.getPosition(),
+            frontRight.getPosition(),
+            rearLeft.getPosition(),
+            rearRight.getPosition()
+        };
+    }
+
     // Get current estimated pose from Odometry
     public Pose2d getPose() {
         return poseEstimator.getEstimatedPosition();
@@ -142,9 +146,9 @@ public class DriveSubsystem extends SubsystemBase {
             double dtheta = Math.abs(current.getRotation().minus(visionPose.getRotation()).getRadians());
 
             // Reject crazy jumps once locked in
-            if (delta > 1.0 & visionLocked) return;
+            if (delta > 1.0 && visionLocked) return;
             else if (delta > 6.0) return;
-            if (dtheta > Math.toRadians(60) & visionLocked) return;
+            if (dtheta > Math.toRadians(60) && visionLocked) return;
 
             // Allow one crazy jump based on vision when we can see at least 2 tags, then lock it in.
             if (m.tagCount() >= 2 ) visionLocked = true;
@@ -163,18 +167,28 @@ public class DriveSubsystem extends SubsystemBase {
     }
 
     // Get Current Angle from Gyroscope (and invert it)
-    public Rotation2d getHeading() {
+    public Rotation2d getRawGyroHeading(){
         return Rotation2d.fromDegrees(-gyro.getYaw());
+    }
+
+    // Get raw Gyro heading and add Field Offset
+    public Rotation2d getHeading() {
+        return getRawGyroHeading().plus(gyroFieldOffset);
+    }
+
+    // Set Field Heading
+    public void setFieldHeading(Rotation2d desiredFieldHeading) {
+        gyroFieldOffset = desiredFieldHeading.minus(getRawGyroHeading());
     }
 
     // Resets odometry to a specified pose
     public void resetOdometry(Pose2d pose) {
+        setFieldHeading(pose.getRotation());
         poseEstimator.resetPosition(getHeading(), getModulePositions(), pose);
     }
 
     // Zero heading
-    public void zeroHeading() {
-        gyro.zeroYaw();
+    public void zeroHeading() {        
         visionLocked = false;
         resetOdometry(new Pose2d(getPose().getTranslation(),new Rotation2d()));
     }
@@ -183,8 +197,14 @@ public class DriveSubsystem extends SubsystemBase {
     public void drive(double forward, double strafe, double rotation, Boolean fieldRelative) {
 
         // Convert the commanded speeds into the correct units for the drivetrain, and convert controller left and forward into positive numbers as expected for swerve
-        forward = -forward * kMaxSpeedMetersPerSecond;
-        strafe = -strafe * kMaxSpeedMetersPerSecond;
+
+        if (AllianceUtil.isRed()) {
+            forward = -forward;
+            strafe = -strafe;
+        }
+
+        forward = forward * kMaxSpeedMetersPerSecond;
+        strafe = strafe * kMaxSpeedMetersPerSecond;
         rotation = -rotation * kMaxAngularSpeed;
 
        
@@ -228,6 +248,17 @@ public class DriveSubsystem extends SubsystemBase {
         return; 
     }
 
+    public Pose2d getShooterPose() {
+        // First-pass estimate; measure this properly later.
+        Transform2d robotToShooter = new Transform2d(
+            new Translation2d(
+                Units.inchesToMeters(-8.48),   // forward from robot center
+                Units.inchesToMeters(-7.32)    // right of robot center
+            ),
+            new Rotation2d() // shooter points same direction as robot
+        );
 
+        return getPose().transformBy(robotToShooter);
+    }
 
 }
