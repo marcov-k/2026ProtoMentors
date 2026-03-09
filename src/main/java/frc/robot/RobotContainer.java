@@ -21,6 +21,7 @@ public class RobotContainer {
   public final Intake intake = new Intake();
   public final Launcher launcher = new Launcher();
   public final Climber climber = new Climber();
+  public final LEDSubsystem led = new LEDSubsystem();
   private final CommandXboxController controller = new CommandXboxController(0);
   private Boolean fieldRelative = true;
 
