@@ -30,7 +30,6 @@ public class Launcher extends SubsystemBase{
     private double targetRpm = 0.0;
     private double targetVoltage = 5.0;
     private DoubleSupplier targetVoltageSupplier;
-    private Intake intake = new Intake();
     
 
     static {
@@ -112,8 +111,7 @@ public class Launcher extends SubsystemBase{
             Commands.waitSeconds(1.0), 
             Commands.runOnce(() -> PreLaunchMotor.setVoltage(targetVoltageSupplier.getAsDouble())),
             Commands.runOnce(() -> HopperMotor.setVoltage(targetVoltageSupplier.getAsDouble())), 
-            Commands.waitSeconds(0.50),
-            Commands.runOnce(() -> intake.run())
+            Commands.waitSeconds(0.50)
         );
     }
 
@@ -122,7 +120,6 @@ public class Launcher extends SubsystemBase{
             HopperMotor.stopMotor(); 
             PreLaunchMotor.stopMotor();
             LaunchMotor.stopMotor();
-            intake.stop();
         });
     }
 }
