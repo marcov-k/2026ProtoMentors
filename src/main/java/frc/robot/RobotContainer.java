@@ -49,13 +49,14 @@ public class RobotContainer {
   }
 
   public Command getAutonomousCommand() {
+    AimAtTargetCommand aimAtHub = new AimAtTargetCommand(drive, () -> 0, () -> 0, () -> true, AllianceUtil::getAllianceHubCenter);
     return Commands.sequence(
       Commands.print("Driving to Firing Pose"),
       new DriveToTargetCommand(drive, AllianceUtil::getAutonomousFiringPosition),
       Commands.print("Reset pose from vision"),
       Commands.runOnce(() -> drive.setPoseFromVision()),
       Commands.print("Aim at Target"),
-      new AimAtTargetCommand(drive, () -> 0, () -> 0, () -> true, AllianceUtil::getAllianceHubCenter),
+      aimAtHub.until(aimAtHub::atGoal),
       Commands.print("Fire"),
       launcher.run(),
       Commands.waitSeconds(5),

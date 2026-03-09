@@ -20,6 +20,8 @@ public class AimAtTargetCommand extends Command {
 
     private final PIDController thetaPid = new PIDController(4.0, 0.0, 0.2);
 
+    private int stableLoops = 0;
+
     public AimAtTargetCommand(
             DriveSubsystem drive,
             DoubleSupplier fwd,
@@ -81,6 +83,11 @@ public class AimAtTargetCommand extends Command {
     }
 
     public boolean atGoal() {
-        return thetaPid.atSetpoint();
+      if (thetaPid.atSetpoint()) {
+          stableLoops++;
+      } else {
+          stableLoops = 0;
+      }
+      return stableLoops > 5; // ~100 ms at 20ms loop
     }
 }
