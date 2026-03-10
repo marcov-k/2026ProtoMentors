@@ -83,6 +83,16 @@ public class DriveSubsystem extends SubsystemBase {
     public static final double kBackLeftChassisAngularOffset = Math.PI;
     public static final double kBackRightChassisAngularOffset = Math.PI / 2;
 
+    // Define location of launcher
+    public static final Transform2d robotToLauncher = new Transform2d(
+        new Translation2d(
+            Units.inchesToMeters(-8.48),   // 8.48 inches back from robot center
+            Units.inchesToMeters(-7.32)    // 7.32 inches right of robot center
+        ),
+        new Rotation2d() // 0 degrees rotation means we launch in the same direction as robot forward
+    );
+
+
     // Drive Subsystem Constructor
     public DriveSubsystem() {
         
@@ -196,16 +206,17 @@ public class DriveSubsystem extends SubsystemBase {
     // Drive Method
     public void drive(double forward, double strafe, double rotation, Boolean fieldRelative) {
 
-        // Convert the commanded speeds into the correct units for the drivetrain, and convert controller left and forward into positive numbers as expected for swerve
-
-        if (!AllianceUtil.isRed()) {
+        // If we're on the Blue Alliance or running in Robot Relative Mode, convert left and forward controller values to positive numbers.
+        if (!AllianceUtil.isRed() || !fieldRelative) {
             forward = -forward;
             strafe = -strafe;
         }
+        rotation = -rotation;
 
+        // Convert the commanded speeds to correct units
         forward = forward * kMaxSpeedMetersPerSecond;
         strafe = strafe * kMaxSpeedMetersPerSecond;
-        rotation = -rotation * kMaxAngularSpeed;
+        rotation = rotation * kMaxAngularSpeed;
 
        
         // Calculate Swerve Module States
@@ -248,17 +259,8 @@ public class DriveSubsystem extends SubsystemBase {
         return; 
     }
 
-    public Pose2d getShooterPose() {
-        // First-pass estimate; measure this properly later.
-        Transform2d robotToShooter = new Transform2d(
-            new Translation2d(
-                Units.inchesToMeters(-8.48),   // forward from robot center
-                Units.inchesToMeters(-7.32)    // right of robot center
-            ),
-            new Rotation2d() // shooter points same direction as robot
-        );
-
-        return getPose().transformBy(robotToShooter);
+    public Pose2d getLauncherPose() {
+        return getPose().transformBy(robotToLauncher);
     }
 
 }
