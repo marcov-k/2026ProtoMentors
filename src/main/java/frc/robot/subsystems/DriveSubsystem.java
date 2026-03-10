@@ -94,9 +94,9 @@ public class DriveSubsystem extends SubsystemBase {
             getModulePositions(),
             new Pose2d(),
             // State std devs (how much you trust swerve+gyro)
-            VecBuilder.fill(0.05, 0.05, Math.toRadians(2.0)),
+            VecBuilder.fill(0.1, 0.1, Math.toRadians(5)),
             // Vision std devs (how much you trust vision)
-            VecBuilder.fill(0.30, 0.30, Math.toRadians(8.0))
+            VecBuilder.fill(2.5, 2.5, Math.toRadians(30.0))
         );
 
         visionLocked = false;
@@ -198,7 +198,7 @@ public class DriveSubsystem extends SubsystemBase {
 
         // Convert the commanded speeds into the correct units for the drivetrain, and convert controller left and forward into positive numbers as expected for swerve
 
-        if (AllianceUtil.isRed()) {
+        if (!AllianceUtil.isRed()) {
             forward = -forward;
             strafe = -strafe;
         }
