@@ -6,8 +6,8 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 
 public final class FieldConstants {
-    public static final Translation2d BLUE_HUB_CENTER = new Translation2d( 4.73, 4.25);
-    public static final Translation2d RED_HUB_CENTER = new Translation2d(11.81,4.25);
+    public static final Translation2d BLUE_HUB_CENTER = new Translation2d( 4.574159, 4.0213534);
+    public static final Translation2d RED_HUB_CENTER = new Translation2d(11.9388636,4.0213534);
         
     public static final Rectangle2d BLUE_ALLIANCE_ZONE = new Rectangle2d(new Translation2d(0,0), new Translation2d(5.0, 8.0));
     public static final Rectangle2d NEUTRAL_ZONE = new Rectangle2d(new Translation2d(5.0,0), new Translation2d(11.94, 8.0));
