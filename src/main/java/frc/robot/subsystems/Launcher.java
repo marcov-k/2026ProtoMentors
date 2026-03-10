@@ -110,10 +110,19 @@ public class Launcher extends SubsystemBase{
             Commands.runOnce(() -> LaunchMotor.setVoltage(targetVoltageSupplier.getAsDouble())),
             Commands.waitSeconds(1.0), 
             Commands.runOnce(() -> PreLaunchMotor.setVoltage(targetVoltageSupplier.getAsDouble())),
-            Commands.runOnce(() -> HopperMotor.setVoltage(targetVoltageSupplier.getAsDouble())), 
+            Commands.runOnce(() -> HopperMotor.setVoltage(targetVoltageSupplier.getAsDouble()*.75)), 
             Commands.waitSeconds(0.50)
         );
     }
+
+    public Command dump() {
+        return Commands.sequence(
+            Commands.runOnce(() -> LaunchMotor.setVoltage(-3)),            
+            Commands.runOnce(() -> PreLaunchMotor.setVoltage(-3)),
+            Commands.runOnce(() -> HopperMotor.setVoltage(-3))
+        );
+    }
+
 
     public Command stop() {
         return Commands.runOnce(() -> {
