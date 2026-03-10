@@ -37,12 +37,12 @@ public class RobotContainer {
 
     
     controller.leftTrigger().onTrue(intake.run()).onFalse(intake.stop());
-    controller.leftBumper().onTrue(intake.dump()).onFalse(intake.stop());
+    controller.leftBumper().onTrue( Commands.parallel(intake.dump(),launcher.dump())).onFalse( Commands.parallel(intake.stop(),launcher.stop()));
     controller.povUp().onTrue(climber.raise()).onFalse(climber.stop());
     controller.povDown().onTrue(climber.lower()).onFalse(climber.stop());
     controller.povRight().whileTrue(launcher.increaseLaunchVoltage());
     controller.povLeft().whileTrue(launcher.decreaseLaunchVoltage());
-    controller.rightTrigger().onTrue(launcher.run()).onFalse(launcher.stop());
+    controller.rightTrigger().onTrue( Commands.parallel(intake.run(),launcher.run())).onFalse( Commands.parallel(intake.stop(),launcher.stop()));
     controller.rightBumper().whileTrue(new AimAtTargetCommand(drive, fwd, str, ()-> fieldRelative, AllianceUtil::getAllianceHubCenter));
     controller.y().onTrue(Commands.runOnce(drive::setPoseFromVision));       
     controller.start().onTrue(new InstantCommand(() -> fieldRelative = !fieldRelative));
