@@ -47,17 +47,17 @@ public class AimAtTargetCommand extends Command {
 
     @Override
     public void execute() {
-        Pose2d shooterPose = drive.getShooterPose();
+        Pose2d LauncherPose = drive.getLauncherPose();
         Translation2d target = targetSupplier.get();
 
         // Vector from actual launch point to target
-        Translation2d toTarget = target.minus(shooterPose.getTranslation());
+        Translation2d toTarget = target.minus(LauncherPose.getTranslation());
 
-        // Desired field-facing angle for the shooter/robot
+        // Desired field-facing angle for the Launcher/robot
         Rotation2d desiredFieldHeading = toTarget.getAngle();
 
-        // Current shooter heading is same as robot heading here
-        Rotation2d currentFieldHeading = shooterPose.getRotation();
+        // Current Launcher heading is same as robot heading here
+        Rotation2d currentFieldHeading = LauncherPose.getRotation();
 
         double rotCmdRadPerSec = thetaPid.calculate(
             currentFieldHeading.getRadians(),
