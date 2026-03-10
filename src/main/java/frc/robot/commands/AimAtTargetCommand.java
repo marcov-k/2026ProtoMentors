@@ -67,7 +67,7 @@ public class AimAtTargetCommand extends Command {
         drive.drive(
             fwd.getAsDouble(),
             strafe.getAsDouble(),
-            rotCmdRadPerSec / DriveSubsystem.kMaxAngularSpeed,
+            -rotCmdRadPerSec / DriveSubsystem.kMaxAngularSpeed,
             fieldRelative.getAsBoolean()
         );
     }
