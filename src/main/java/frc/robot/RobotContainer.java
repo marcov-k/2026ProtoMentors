@@ -6,7 +6,9 @@ package frc.robot;
 
 import java.util.function.DoubleSupplier;
 
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -32,6 +34,7 @@ public class RobotContainer {
     autoChooser.setDefaultOption("Do Nothing", null);
     autoChooser.addOption("Back up and Shoot", autoJustBackupandShoot());
     autoChooser.addOption("Midfield Intake", autoMidFieldIntake());
+    SmartDashboard.putData("Auto Chooser", autoChooser);
 
     configureBindings();
     drive.setDefaultCommand(drive.driveCommand(controller, () -> fieldRelative));        
@@ -80,9 +83,11 @@ public class RobotContainer {
     return Commands.sequence(
       Commands.print("Driving to MidField"),
       new DriveToTargetCommand(drive, AllianceUtil::getAutonomousFiringPosition),
+      Commands.print("Reset pose from vision"),
+      Commands.runOnce(() -> drive.setPoseFromVision()),
       Commands.print("Turn on the Intake"),
       Commands.runOnce(() -> intake.run()),
-      Commands.print("Drive to CenterField")
+      Commands.print("Drive to CenterField (Eventually)")
       // new DriveToTargetCommand(drive, AllianceUtil::getAutoCenterField)
       // Need to add nav points and finish writing this
     );
