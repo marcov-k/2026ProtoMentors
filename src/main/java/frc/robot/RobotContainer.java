@@ -6,6 +6,7 @@ package frc.robot;
 
 import java.util.function.DoubleSupplier;
 
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -24,11 +25,16 @@ public class RobotContainer {
   public final LEDSubsystem led = new LEDSubsystem();
   private final CommandXboxController controller = new CommandXboxController(0);
   private Boolean fieldRelative = true;
+  private final SendableChooser<Command> autoChooser = new SendableChooser<>();
 
   public RobotContainer() {
+    // Auto Chooser
+    autoChooser.setDefaultOption("Do Nothing", null);
+    autoChooser.addOption("Back up and Shoot", autoJustBackupandShoot());
+    autoChooser.addOption("Midfield Intake", autoMidFieldIntake());
+
     configureBindings();
-    drive.setDefaultCommand(drive.driveCommand(controller, () -> fieldRelative));    
-    // launcher.setDefaultCommand(Commands.run(launcher::stopAll, launcher));
+    drive.setDefaultCommand(drive.driveCommand(controller, () -> fieldRelative));        
   }
 
   private void configureBindings() {
@@ -43,13 +49,17 @@ public class RobotContainer {
     controller.povRight().whileTrue(launcher.increaseLaunchVoltage());
     controller.povLeft().whileTrue(launcher.decreaseLaunchVoltage());
     controller.rightTrigger().onTrue( Commands.parallel(intake.run(),launcher.run())).onFalse( Commands.parallel(intake.stop(),launcher.stop()));
-    controller.rightBumper().whileTrue(new AimAtTargetCommand(drive, fwd, str, ()-> fieldRelative, AllianceUtil::getAllianceHubCenter));
+    controller.rightBumper().whileTrue(new AimAtTargetCommand(drive, launcher, fwd, str, ()-> fieldRelative, AllianceUtil::getAllianceHubCenter));
     controller.y().onTrue(Commands.runOnce(drive::setPoseFromVision));       
     controller.start().onTrue(new InstantCommand(() -> fieldRelative = !fieldRelative));
   }
 
   public Command getAutonomousCommand() {
-    AimAtTargetCommand aimAtHub = new AimAtTargetCommand(drive, () -> 0, () -> 0, () -> true, AllianceUtil::getAllianceHubCenter);
+    return autoChooser.getSelected();
+  }
+
+  private Command autoJustBackupandShoot() {
+    AimAtTargetCommand aimAtHub = new AimAtTargetCommand(drive, launcher, () -> 0, () -> 0, () -> true, AllianceUtil::getAllianceHubCenter);
     return Commands.sequence(
       Commands.print("Driving to Firing Pose"),
       new DriveToTargetCommand(drive, AllianceUtil::getAutonomousFiringPosition),
@@ -65,5 +75,17 @@ public class RobotContainer {
     );
   }
 
+  private Command autoMidFieldIntake() {
+    
+    return Commands.sequence(
+      Commands.print("Driving to MidField"),
+      new DriveToTargetCommand(drive, AllianceUtil::getAutonomousFiringPosition),
+      Commands.print("Turn on the Intake"),
+      Commands.runOnce(() -> intake.run()),
+      Commands.print("Drive to CenterField")
+      // new DriveToTargetCommand(drive, AllianceUtil::getAutoCenterField)
+      // Need to add nav points and finish writing this
+    );
+  }
 
 }

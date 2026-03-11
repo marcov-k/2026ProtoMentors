@@ -7,6 +7,7 @@ import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -29,6 +30,8 @@ public class Launcher extends SubsystemBase{
 
     private double targetRpm = 0.0;
     private double targetVoltage = 5.0;
+    private double hopperVoltage = 5.0;
+    private double prelaunchVoltage = 6.0;
     private DoubleSupplier targetVoltageSupplier;
     
 
@@ -48,46 +51,28 @@ public class Launcher extends SubsystemBase{
         PreLaunchMotor.configure(DefaultConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
         HopperMotor = new SparkMax(kHopperMotorCanID, MotorType.kBrushless);
         HopperMotor.configure(DefaultConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
-        // LaunchController = LaunchMotor.getClosedLoopController();
-        // launchEncoder = LaunchMotor.getEncoder();
         targetVoltageSupplier = ()-> targetVoltage;
     }
 
     @Override
     public void periodic() {        
-        SmartDashboard.putNumber("Shooter/TargetRPM", targetVoltage);
-        // SmartDashboard.putNumber("Shooter/ActualRPM", getActualRpm());
-        // SmartDashboard.putBoolean("Shooter/AtSetpoint", atSetpoint());
+        SmartDashboard.putNumber("Shooter/Voltage", targetVoltage);        
     }
-
-/*     public void setTargetRpm(double rpm) {
-        targetRpm = rpm;
-        LaunchController.setSetpoint(rpm, ControlType.kVelocity, ClosedLoopSlot.kSlot0);
-    } */
 
     public double getTargetRpm() {
         return targetRpm;
     }
 
+    public void setTargetVoltage(double v) {
+        targetVoltage = MathUtil.clamp(v, 4.0, 8.0);
+    }
 
     public Command increaseLaunchVoltage() {
-        return Commands.runOnce(() -> targetVoltage = Math.min(targetVoltage + .1, 12.0));
+        return Commands.runOnce(() -> targetVoltage = Math.min(targetVoltage + .1, 8.0));
     }
 
     public Command decreaseLaunchVoltage() {
-        return Commands.runOnce(() -> targetVoltage = Math.max(targetVoltage - .1, 3.0));
-    }
-
-/*     public double getActualRpm() {
-        return launchEncoder.getVelocity(); // RPM
-    } */
-
-/*     public boolean atSetpoint() {
-        return LaunchController.isAtSetpoint(); // +/- 100 RPM error 
-    } */
-
-    public void setHopper(double power) {
-        HopperMotor.set(power);
+        return Commands.runOnce(() -> targetVoltage = Math.max(targetVoltage - .1, 4.0));
     }
 
     public void stopAll() {
@@ -96,33 +81,22 @@ public class Launcher extends SubsystemBase{
         LaunchMotor.stopMotor();
     }
 
-/*     public Command runAtSpeed(double velocity) {      
-        return Commands.sequence(
-            Commands.runOnce(() -> LaunchController.setSetpoint(velocity, ControlType.kVelocity, ClosedLoopSlot.kSlot0)),
-            Commands.waitUntil(() -> LaunchController.isAtSetpoint()),
-            Commands.runOnce(() -> PreLaunchMotor.set(0.65)),
-            Commands.runOnce(() -> HopperMotor.set(.5))
-        );   
-    } */
-
     public Command run() {
         return Commands.sequence(
             Commands.runOnce(() -> LaunchMotor.setVoltage(targetVoltageSupplier.getAsDouble())),
-            Commands.waitSeconds(1.0), 
-            Commands.runOnce(() -> PreLaunchMotor.setVoltage(targetVoltageSupplier.getAsDouble())),
-            Commands.runOnce(() -> HopperMotor.setVoltage(targetVoltageSupplier.getAsDouble()*.75)), 
-            Commands.waitSeconds(0.50)
+            Commands.waitSeconds(0.5), 
+            Commands.runOnce(() -> PreLaunchMotor.setVoltage(prelaunchVoltage)),
+            Commands.runOnce(() -> HopperMotor.setVoltage(hopperVoltage))
         );
     }
 
     public Command dump() {
         return Commands.sequence(
-            Commands.runOnce(() -> LaunchMotor.setVoltage(-3)),            
-            Commands.runOnce(() -> PreLaunchMotor.setVoltage(-3)),
-            Commands.runOnce(() -> HopperMotor.setVoltage(-3))
+            Commands.runOnce(() -> LaunchMotor.setVoltage(-4)),            
+            Commands.runOnce(() -> PreLaunchMotor.setVoltage(-4)),
+            Commands.runOnce(() -> HopperMotor.setVoltage(-4))
         );
     }
-
 
     public Command stop() {
         return Commands.runOnce(() -> {

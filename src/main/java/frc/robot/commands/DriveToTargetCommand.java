@@ -18,42 +18,32 @@ public class DriveToTargetCommand extends Command
     final PIDController fwdPID = new PIDController(0.45, 0.0, 0.02); // tune
     final PIDController strafePID = new PIDController(0.45, 0.0, 0.02); // tune
 
-    public DriveToTargetCommand(DriveSubsystem drive, Supplier<Translation2d> targetSupplier)
-    {
+    public DriveToTargetCommand(DriveSubsystem drive, Supplier<Translation2d> targetSupplier) {
         this.drive = drive;
         this.targetSupplier = targetSupplier;
-
         addRequirements(drive);
-
         fwdPID.setTolerance(0.1);
         strafePID.setTolerance(0.1);
     }
 
     @Override
-    public void execute()
-    {
-        // TODO: add support for driving to target when not in field relative?
-
+    public void execute() {
         Pose2d pose = drive.getPose();
         Translation2d target = targetSupplier.get();
         Translation2d delta = target.minus(pose.getTranslation());
         double fwd = -MathUtil.clamp(fwdPID.calculate(delta.getX()), -kMaxSpeed, kMaxSpeed);            
         double strafe = -MathUtil.clamp(strafePID.calculate(delta.getY()), -kMaxSpeed, kMaxSpeed);
-
         drive.drive(fwd, strafe, 0, true);
-
     }
 
 
     @Override
-    public void end(boolean interrupted)
-    {
+    public void end(boolean interrupted) {
         drive.drive(0,0,0,true);
     }
 
     @Override
-    public boolean isFinished()
-    {
+    public boolean isFinished() {
         Pose2d pose = drive.getPose();
         Translation2d target = targetSupplier.get();
         return target.minus(pose.getTranslation()).getNorm() <= kMinDist;

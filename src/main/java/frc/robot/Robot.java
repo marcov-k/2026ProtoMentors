@@ -9,7 +9,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 
 public class Robot extends TimedRobot {
-  private Command m_autonomousCommand;
+  private Command auto;
 
   private final RobotContainer m_robotContainer;
 
@@ -44,13 +44,12 @@ public class Robot extends TimedRobot {
 
     // Get assumed starting position from Driver Station 
     m_robotContainer.drive.setPoseFromDsCommand().schedule();
-
     m_robotContainer.led.autonomousInit();
 
     // Then proceed with autonomous
-    m_autonomousCommand = m_robotContainer.getAutonomousCommand();
-    if (m_autonomousCommand != null) {
-      CommandScheduler.getInstance().schedule(m_autonomousCommand);
+    auto = m_robotContainer.getAutonomousCommand();
+    if (auto != null) {
+      CommandScheduler.getInstance().schedule(auto);
     }
   }
 
@@ -62,15 +61,11 @@ public class Robot extends TimedRobot {
 
   @Override
   public void teleopInit() {
-    if (m_autonomousCommand != null) {
-      m_autonomousCommand.cancel();
+    if (auto != null) {
+      auto.cancel();
     }
 
-    // Get assumed starting position - REMOVE THIS BEFORE A MATCH
-    m_robotContainer.drive.setPoseFromDsCommand().schedule();
-  
     m_robotContainer.led.teleopInit();
-  
   }
 
   @Override

@@ -23,6 +23,7 @@ public class Intake extends SubsystemBase{
         DefaultConfig.idleMode(IdleMode.kCoast);
         DefaultConfig.openLoopRampRate(1.0);
         DefaultConfig.inverted(true);
+        DefaultConfig.voltageCompensation(12);
     }
 
     public Intake() {
@@ -31,11 +32,11 @@ public class Intake extends SubsystemBase{
     }
 
     public Command run() {
-        return Commands.runOnce(() -> IntakeMotor.set(.50));
+        return Commands.runOnce(() -> IntakeMotor.setVoltage(6.0));
     }
 
     public Command dump() {
-        return Commands.runOnce(() -> IntakeMotor.set(-.50));
+        return Commands.runOnce(() -> IntakeMotor.setVoltage(-6.0));
     }
 
     public Command stop() {
