@@ -8,8 +8,10 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.field.AllianceUtil;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.Launcher;
 
@@ -19,8 +21,6 @@ public class AimAtTargetCommand extends Command {
     private final DoubleSupplier fwd;
     private final DoubleSupplier strafe;
     private final BooleanSupplier fieldRelative;
-    private final Supplier<Translation2d> targetSupplier;
-
     private final PIDController thetaPid = new PIDController(4.0, 0.0, 0.2);
 
     private int stableLoops = 0;
@@ -30,14 +30,13 @@ public class AimAtTargetCommand extends Command {
             Launcher launcher,
             DoubleSupplier fwd,
             DoubleSupplier strafe,
-            BooleanSupplier fieldRelative,
-            Supplier<Translation2d> targetSupplier) {
+            BooleanSupplier fieldRelative) {
         this.drive = drive;
         this.launcher = launcher;
         this.fwd = fwd;
         this.strafe = strafe;
         this.fieldRelative = fieldRelative;
-        this.targetSupplier = targetSupplier;
+        
 
         addRequirements(drive);
 
@@ -50,32 +49,64 @@ public class AimAtTargetCommand extends Command {
         thetaPid.reset();
     }
 
+
+    private Translation2d getTarget(Pose2d launcherPose) {
+        Translation2d pos = launcherPose.getTranslation();
+
+        // If in our Alliance Zone, target the Hub
+        if (AllianceUtil.isInAllianceZone(pos)) {
+            return AllianceUtil.getAllianceHubCenter();
+        }
+
+        // If in the neutral zone, choose one of the alliance-zone shot locations
+        if (AllianceUtil.isInNeutralZone(pos)) {
+            return AllianceUtil.getBestAllianceZoneShotTarget(pos);
+        }
+
+        // Fallback: hub
+        return AllianceUtil.getAllianceHubCenter();
+    }
+
     @Override
     public void execute() {
         // Current position and orientation of launcher
         Pose2d LauncherPose = drive.getLauncherPose();
 
         // Target position
-        Translation2d target = targetSupplier.get();
+        Translation2d target = getTarget(LauncherPose);
+
+        ChassisSpeeds robotSpeeds = drive.getRobotRelativeSpeeds();
 
         // Vector from launch point to target
         Translation2d toTarget = target.minus(LauncherPose.getTranslation());
 
-        // Calculate distance 
+        // Calculate distance, lookup voltage, and set voltage 
         double distance = toTarget.getNorm();
-
-        // Lookup Voltage
         double voltage = lookupVoltage(distance);
-
-        // Set voltage 
         launcher.setTargetVoltage(voltage);
 
+        // Lookup Time of Flight 
+        double timeOfFlight = lookupTimeOfFlight(distance);
+
+        // Get Current speed and heading
+        Translation2d robotFieldVelocity = new Translation2d(
+            robotSpeeds.vxMetersPerSecond,
+            robotSpeeds.vyMetersPerSecond
+        ).rotateBy(drive.getHeading());
+
+        // Compensate target based on current velocity
+        Translation2d compensatedTarget = target.minus(robotFieldVelocity.times(timeOfFlight));
+
+        // Recompute Aim vector using compensated target
+        Translation2d compensatedToTarget = compensatedTarget.minus(LauncherPose.getTranslation());
+
         // Desired field-facing angle for the Launcher/robot
-        Rotation2d desiredFieldHeading = toTarget.getAngle();
+        Rotation2d desiredFieldHeading = compensatedToTarget.getAngle();
 
         // Current Launcher heading is same as robot heading here
         Rotation2d currentFieldHeading = LauncherPose.getRotation();
 
+        // Calculate rotation command value in radians per second using PID 
         double rotCmdRadPerSec = thetaPid.calculate(
             currentFieldHeading.getRadians(),
             desiredFieldHeading.getRadians()
@@ -108,9 +139,10 @@ public class AimAtTargetCommand extends Command {
       return stableLoops > 5; // ~100 ms at 20ms loop
     }
 
-    // Lookup Table for voltages:
+    // Lookup Tables by Distance:
     private static final double[] Distance = { 6, 8, 18 };
     private static final double[] Voltage = { 5.35, 5.4, 7};
+    private static final double[] TimeOfFlight = {0.8, 0.88, 1.88};
 
     public static double lookupVoltage(double meters) {
         // Convert meters to feet
@@ -119,7 +151,7 @@ public class AimAtTargetCommand extends Command {
         // If less than 6 feet, return 5.35 volts
         if (feet <= Distance[0]) return Voltage[0];
 
-        // Otherwise interpolate from maped values
+        // Otherwise interpolate from mapped values
         for (int i = 0; i < Distance.length - 1; i++) {
         if (feet <= Distance[i + 1]) {
             double t = (feet - Distance[i]) / (Distance[i + 1] - Distance[i]);
@@ -128,4 +160,22 @@ public class AimAtTargetCommand extends Command {
         }
         return Voltage[Voltage.length - 1];
     }
+
+    public static double lookupTimeOfFlight(double meters) {
+        // Convert meters to feet
+        double feet = Units.metersToFeet(meters);
+
+        // If less than 6 feet, return .25 seconds 
+        if (feet <= Distance[0]) return TimeOfFlight[0];
+
+        // Otherwise interpolate from mapped values
+        for (int i = 0; i < Distance.length - 1; i++) {
+        if (feet <= Distance[i + 1]) {
+            double t = (feet - Distance[i]) / (Distance[i + 1] - Distance[i]);
+            return TimeOfFlight[i] + t * (TimeOfFlight[i + 1] - TimeOfFlight[i]);
+        }
+        }
+        return TimeOfFlight[TimeOfFlight.length - 1];
+    }
+
 }
