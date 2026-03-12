@@ -24,6 +24,8 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+
+import java.util.Set;
 import java.util.function.BooleanSupplier;
 import com.studica.frc.AHRS;
 
@@ -325,29 +327,30 @@ public class DriveSubsystem extends SubsystemBase {
 
     // PathPlanner - Follow Path Command
     public Command followPathCommand(String pathName) {
-        try {
-            PathPlannerPath path = PathPlannerPath.fromPathFile(pathName);   
-            return AutoBuilder.followPath(path);
-        } catch (Exception e) {
-            DriverStation.reportError("Unable to load path: " + pathName, e.getStackTrace());
-            return Commands.none();
-        }
+        return Commands.defer(() -> {
+            try {
+                PathPlannerPath path = PathPlannerPath.fromPathFile(pathName);
+
+                Pose2d startPose = path.getStartingHolonomicPose().orElse(null);
+                Pose2d currentPose = getPose();
+
+                if (startPose != null &&
+                    currentPose.getTranslation().getDistance(startPose.getTranslation()) > 1.0) {
+
+                    DriverStation.reportWarning(
+                        "Too far from path start for " + pathName, false
+                    );
+                    return Commands.none();
+                }
+
+                return AutoBuilder.followPath(path);
+
+            } catch (Exception e) {
+                DriverStation.reportError(
+                    "Unable to load path: " + pathName, e.getStackTrace()
+                );
+                return Commands.none();
+            }
+        }, Set.of(this));
     }
-
-    // PathPlanner - Follow Starting Autonomous Path Command
-    public Command followStartingAutoPathCommand(String pathName) {
-        try {
-            PathPlannerPath path = PathPlannerPath.fromPathFile(pathName);
-
-            return Commands.sequence(
-                Commands.runOnce(() ->  path.getStartingHolonomicPose().ifPresent(this::resetOdometry)),
-                AutoBuilder.followPath(path)
-            );
-
-        } catch (Exception e) {
-            DriverStation.reportError("Unable to load path: " + pathName, e.getStackTrace());
-            return Commands.none();
-        }
-    }
-
 }

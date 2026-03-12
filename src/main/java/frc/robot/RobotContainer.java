@@ -6,6 +6,9 @@ package frc.robot;
 
 import java.util.function.DoubleSupplier;
 
+import com.pathplanner.lib.commands.PathPlannerAuto;
+
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -30,7 +33,8 @@ public class RobotContainer {
   public RobotContainer() {
     // Auto Chooser
     autoChooser.setDefaultOption("Do Nothing", null);
-    autoChooser.addOption("Path Planner Test", drive.followStartingAutoPathCommand("1st Test"));
+    autoChooser.addOption("Path Planner Test", new PathPlannerAuto("Auto1stTest"));
+    autoChooser.addOption("Left Side Trench", new PathPlannerAuto("AutoLeftSideTrench"));
     SmartDashboard.putData("Auto Chooser", autoChooser);
 
     configureBindings();
@@ -55,7 +59,7 @@ public class RobotContainer {
   }
 
   public Command getAutonomousCommand() {
-    return autoChooser.getSelected();
+      return autoChooser.getSelected();
   }
 
 
