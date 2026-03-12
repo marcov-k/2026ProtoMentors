@@ -5,7 +5,6 @@ import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.pathplanner.lib.path.PathPlannerPath;
-
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -25,12 +24,18 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-
-
 import java.util.function.BooleanSupplier;
 import com.studica.frc.AHRS;
 
 public class DriveSubsystem extends SubsystemBase {
+
+
+    /* CONSTANTS */ 
+    /* ~~~~~~~~~ */
+
+    // Controller Speed Limits
+    public static double kSpeedLimit = 0.5;
+    public static final double kControllerDeadband = 0.03;
     
     // Declare 4 instances of SwerveModules
     private final SwerveModule frontLeft = new SwerveModule(kFrontLeftDrivingCanId, kFrontLeftTurningCanId, kFrontLeftChassisAngularOffset); 
@@ -38,27 +43,22 @@ public class DriveSubsystem extends SubsystemBase {
     private final SwerveModule rearLeft = new SwerveModule(kRearLeftDrivingCanId, kRearLeftTurningCanId, kBackLeftChassisAngularOffset);
     private final SwerveModule rearRight = new SwerveModule(kRearRightDrivingCanId, kRearRightTurningCanId, kBackRightChassisAngularOffset);
 
-    
-
+    // Pose Estimator
     private final SwerveDrivePoseEstimator poseEstimator;
     private Rotation2d gyroFieldOffset = new Rotation2d();
 
+    // Vision 
     private final VisionSubsystem vision = new VisionSubsystem();
-
     private boolean visionLocked;
-
-    private final Field2d field = new Field2d();
-    private final Field2d visionfield = new Field2d();
     Pose2d lastVisionPose;
 
+    // Fields for the DashBoard
+    private final Field2d field = new Field2d();
+    private final Field2d visionfield = new Field2d();
 
-    // Declare NavX AHRS Gyroscope
+    // NavX AHRS Gyroscope
     private final AHRS gyro = new AHRS(AHRS.NavXComType.kMXP_SPI);
     
-    // Speed Limit
-    public static double kSpeedLimit = 0.5;
-    public static final double kControllerDeadband = 0.05;
-
     // SPARK MAX CAN IDs - Driving Motors
     public static final int kFrontLeftDrivingCanId = 2;
     public static final int kFrontRightDrivingCanId = 1;
@@ -84,7 +84,8 @@ public class DriveSubsystem extends SubsystemBase {
         new Translation2d(kWheelBase / 2, kTrackWidth / 2),
         new Translation2d(kWheelBase / 2, -kTrackWidth / 2),
         new Translation2d(-kWheelBase / 2, kTrackWidth / 2),
-        new Translation2d(-kWheelBase / 2, -kTrackWidth / 2));
+        new Translation2d(-kWheelBase / 2, -kTrackWidth / 2)
+    );
 
     // Angular offsets in radians
     public static final double kFrontLeftChassisAngularOffset = -Math.PI / 2;
@@ -92,7 +93,7 @@ public class DriveSubsystem extends SubsystemBase {
     public static final double kBackLeftChassisAngularOffset = Math.PI;
     public static final double kBackRightChassisAngularOffset = Math.PI / 2;
 
-    // Define location of launcher
+    // Location of Launcher 
     public static final Transform2d robotToLauncher = new Transform2d(
         new Translation2d(
             Units.inchesToMeters(-8.48),   // 8.48 inches back from robot center
@@ -102,11 +103,14 @@ public class DriveSubsystem extends SubsystemBase {
     );
 
 
+
+    /* CONSTRUCTOR */ 
+    /* ~~~~~~~~~~~ */
+
     // Drive Subsystem Constructor
     public DriveSubsystem() {
         
-
-        // Create a Pose Estimator Object
+        // Pose Estimator
         poseEstimator = new SwerveDrivePoseEstimator(
             kDriveKinematics,
             getHeading(),
@@ -118,11 +122,14 @@ public class DriveSubsystem extends SubsystemBase {
             VecBuilder.fill(2.5, 2.5, Math.toRadians(30.0))
         );
 
+        // Vision
         visionLocked = false;
 
+        // Smart Dashboard Fields
         SmartDashboard.putData("Field", field);
         SmartDashboard.putData("VisionField", visionfield);
 
+        // PathPlanner
         try {
             RobotConfig config = RobotConfig.fromGUISettings();
 
@@ -146,47 +153,10 @@ public class DriveSubsystem extends SubsystemBase {
 
     }
 
-    private SwerveModulePosition[] getModulePositions() {
-        return new SwerveModulePosition[] {
-            frontLeft.getPosition(),
-            frontRight.getPosition(),
-            rearLeft.getPosition(),
-            rearRight.getPosition()
-        };
-    }
+    /* COMMAND SCHEDULER */
+    /* ~~~~~~~~~~~~~~~~~ */
 
-    // For PathPlanner
-    public ChassisSpeeds getRobotRelativeSpeeds() {
-        return kDriveKinematics.toChassisSpeeds(
-            frontLeft.getState(),
-            frontRight.getState(),
-            rearLeft.getState(),
-            rearRight.getState()
-        );
-    }
-
-    // PathPlanner - Follow Path Command
-    public Command followPathCommand(String pathName) {
-        try {
-            PathPlannerPath path = PathPlannerPath.fromPathFile(pathName);        
-            return AutoBuilder.followPath(path);
-        } catch (Exception e) {
-            DriverStation.reportError("Unable to load path: " + pathName, e.getStackTrace());
-            return Commands.none();
-        }
-    }
-
-    // Get current estimated pose from Odometry
-    public Pose2d getPose() {
-        return poseEstimator.getEstimatedPosition();
-    }
-
-    
-    public void teleopInit() {
-        visionLocked = false;
-    }
-
-    // Periodic
+    // Periodic - Run by Command Scheduler
     @Override
     public void periodic() {
         // Update Pose Estimate from Swerve Modules
@@ -228,31 +198,17 @@ public class DriveSubsystem extends SubsystemBase {
         SmartDashboard.putNumber("Raw gyro yaw", gyro.getYaw());        
     }
 
-    // Get Current Angle from Gyroscope (and invert it)
-    public Rotation2d getRawGyroHeading(){
-        return Rotation2d.fromDegrees(-gyro.getYaw());
-    }
+    /* SWERVE */
+    /* ~~~~~~ */
 
-    // Get raw Gyro heading and add Field Offset
-    public Rotation2d getHeading() {
-        return getRawGyroHeading().plus(gyroFieldOffset);
-    }
-
-    // Set Field Heading
-    public void setFieldHeading(Rotation2d desiredFieldHeading) {
-        gyroFieldOffset = desiredFieldHeading.minus(getRawGyroHeading());
-    }
-
-    // Resets odometry to a specified pose
-    public void resetOdometry(Pose2d pose) {
-        setFieldHeading(pose.getRotation());
-        poseEstimator.resetPosition(getHeading(), getModulePositions(), pose);
-    }
-
-    // Zero heading
-    public void zeroHeading() {        
-        visionLocked = false;
-        resetOdometry(new Pose2d(getPose().getTranslation(),new Rotation2d()));
+    // Get Swerve Module Positions
+    private SwerveModulePosition[] getModulePositions() {
+        return new SwerveModulePosition[] {
+            frontLeft.getPosition(),
+            frontRight.getPosition(),
+            rearLeft.getPosition(),
+            rearRight.getPosition()
+        };
     }
 
     // Drive Method
@@ -289,17 +245,6 @@ public class DriveSubsystem extends SubsystemBase {
 
     }
 
-    // For PathPlanner
-    public void driveRobotRelative(ChassisSpeeds speeds) {
-        var swerveModuleStates = kDriveKinematics.toSwerveModuleStates(speeds);
-        SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, kMaxSpeedMetersPerSecond);
-
-        frontLeft.setDesiredState(swerveModuleStates[0]);
-        frontRight.setDesiredState(swerveModuleStates[1]);
-        rearLeft.setDesiredState(swerveModuleStates[2]);
-        rearRight.setDesiredState(swerveModuleStates[3]);
-    }
-
     // Drive Command
     public Command driveCommand(CommandXboxController controller, BooleanSupplier fieldRelative){
         return Commands.run(
@@ -312,18 +257,97 @@ public class DriveSubsystem extends SubsystemBase {
         , this);
     } 
 
-    // Reset Odometry to Starting Pose 
-    public Command setPoseFromDsCommand() {
-        return Commands.runOnce(() -> resetOdometry(AllianceUtil.getStartingPose()),this);
+
+    /* ODOMETRY */
+    /* ~~~~~~~~ */
+
+    // Get Current Estimated Pose 
+    public Pose2d getPose() {
+        return poseEstimator.getEstimatedPosition();
     }
 
+    // Get Current Angle from Gyroscope (and invert it)
+    public Rotation2d getRawGyroHeading(){
+        return Rotation2d.fromDegrees(-gyro.getYaw());
+    }
+
+    // Get raw Gyro heading and add a Field Offset
+    public Rotation2d getHeading() {
+        return getRawGyroHeading().plus(gyroFieldOffset);
+    }
+
+    // Set Field Heading - Gyroscope offset
+    public void setFieldHeading(Rotation2d desiredFieldHeading) {
+        gyroFieldOffset = desiredFieldHeading.minus(getRawGyroHeading());
+    }
+
+    // Resets odometry to a specified pose
+    public void resetOdometry(Pose2d pose) {
+        setFieldHeading(pose.getRotation());
+        poseEstimator.resetPosition(getHeading(), getModulePositions(), pose);
+    }
+
+    // Used by Aim At Target Command
+    public Pose2d getLauncherPose() {
+        return getPose().transformBy(robotToLauncher);
+    }
+
+    // Reset Pose based on latest vision pose
     public void setPoseFromVision() {
         resetOdometry(lastVisionPose);
         return; 
     }
 
-    public Pose2d getLauncherPose() {
-        return getPose().transformBy(robotToLauncher);
+
+
+    /* PATHPLANNER */
+    /* ~~~~~~~~~~~ */
+
+    // PathPlanner - Get Speeds
+    public ChassisSpeeds getRobotRelativeSpeeds() {
+        return kDriveKinematics.toChassisSpeeds(
+            frontLeft.getState(),
+            frontRight.getState(),
+            rearLeft.getState(),
+            rearRight.getState()
+        );
+    }
+
+    // PathPlanner's Drive Command
+    public void driveRobotRelative(ChassisSpeeds speeds) {
+        var swerveModuleStates = kDriveKinematics.toSwerveModuleStates(speeds);
+        SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, kMaxSpeedMetersPerSecond);
+        frontLeft.setDesiredState(swerveModuleStates[0]);
+        frontRight.setDesiredState(swerveModuleStates[1]);
+        rearLeft.setDesiredState(swerveModuleStates[2]);
+        rearRight.setDesiredState(swerveModuleStates[3]);
+    }
+
+    // PathPlanner - Follow Path Command
+    public Command followPathCommand(String pathName) {
+        try {
+            PathPlannerPath path = PathPlannerPath.fromPathFile(pathName);   
+            return AutoBuilder.followPath(path);
+        } catch (Exception e) {
+            DriverStation.reportError("Unable to load path: " + pathName, e.getStackTrace());
+            return Commands.none();
+        }
+    }
+
+    // PathPlanner - Follow Starting Autonomous Path Command
+    public Command followStartingAutoPathCommand(String pathName) {
+        try {
+            PathPlannerPath path = PathPlannerPath.fromPathFile(pathName);
+
+            return Commands.sequence(
+                Commands.runOnce(() ->  path.getStartingHolonomicPose().ifPresent(this::resetOdometry)),
+                AutoBuilder.followPath(path)
+            );
+
+        } catch (Exception e) {
+            DriverStation.reportError("Unable to load path: " + pathName, e.getStackTrace());
+            return Commands.none();
+        }
     }
 
 }

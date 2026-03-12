@@ -7,7 +7,6 @@ package frc.robot;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import frc.robot.field.AllianceUtil;
 
 public class Robot extends TimedRobot {
   private Command auto;
@@ -43,8 +42,7 @@ public class Robot extends TimedRobot {
   @Override
   public void autonomousInit() {
 
-    // Get assumed starting position from Driver Station 
-    m_robotContainer.drive.resetOdometry(AllianceUtil.getStartingPose());
+    // Turn on the LEDs 
     m_robotContainer.led.autonomousInit();
 
     // Then proceed with autonomous
@@ -65,7 +63,8 @@ public class Robot extends TimedRobot {
     if (auto != null) {
       auto.cancel();
     }
-
+    
+    // Turn on the LEDs
     m_robotContainer.led.teleopInit();
   }
 

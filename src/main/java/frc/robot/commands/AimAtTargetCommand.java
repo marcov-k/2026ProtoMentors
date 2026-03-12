@@ -108,7 +108,7 @@ public class AimAtTargetCommand extends Command {
       return stableLoops > 5; // ~100 ms at 20ms loop
     }
 
-    // The lookup table for voltages
+    // Lookup Table for voltages:
     private static final double[] Distance = { 6, 8, 18 };
     private static final double[] Voltage = { 5.35, 5.4, 7};
 

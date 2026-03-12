@@ -31,9 +31,7 @@ public class RobotContainer {
   public RobotContainer() {
     // Auto Chooser
     autoChooser.setDefaultOption("Do Nothing", null);
-    autoChooser.addOption("Back up and Shoot", autoJustBackupandShoot());
-    autoChooser.addOption("Midfield Intake", autoMidFieldIntake());
-    autoChooser.addOption("Path Planner Test",drive.followPathCommand("1st Test"));
+    autoChooser.addOption("Path Planner Test", drive.followStartingAutoPathCommand("1st Test"));
     SmartDashboard.putData("Auto Chooser", autoChooser);
 
     configureBindings();
@@ -61,36 +59,5 @@ public class RobotContainer {
     return autoChooser.getSelected();
   }
 
-  private Command autoJustBackupandShoot() {
-    AimAtTargetCommand aimAtHub = new AimAtTargetCommand(drive, launcher, () -> 0, () -> 0, () -> true, AllianceUtil::getAllianceHubCenter);
-    return Commands.sequence(
-      Commands.print("Driving to Firing Pose"),
-      new DriveToTargetCommand(drive, AllianceUtil::getAutonomousFiringPosition),
-      Commands.print("Reset pose from vision"),
-      Commands.runOnce(() -> drive.setPoseFromVision()),
-      Commands.print("Aim at Target"),
-      aimAtHub.until(aimAtHub::atGoal),
-      Commands.print("Fire"),
-      launcher.run(),
-      Commands.waitSeconds(5),
-      Commands.print("Cease Fire"),
-      launcher.stop()
-    );
-  }
-
-  private Command autoMidFieldIntake() {
-    
-    return Commands.sequence(
-      Commands.print("Driving to MidField"),
-      new DriveToTargetCommand(drive, AllianceUtil::getAutonomousFiringPosition),
-      Commands.print("Reset pose from vision"),
-      Commands.runOnce(() -> drive.setPoseFromVision()),
-      Commands.print("Turn on the Intake"),
-      Commands.runOnce(() -> intake.run()),
-      Commands.print("Drive to CenterField (Eventually)")
-      // new DriveToTargetCommand(drive, AllianceUtil::getAutoCenterField)
-      // Need to add nav points and finish writing this
-    );
-  }
 
 }
