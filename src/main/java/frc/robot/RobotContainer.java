@@ -33,6 +33,7 @@ public class RobotContainer {
     autoChooser.setDefaultOption("Do Nothing", null);
     autoChooser.addOption("Back up and Shoot", autoJustBackupandShoot());
     autoChooser.addOption("Midfield Intake", autoMidFieldIntake());
+    autoChooser.addOption("Path Planner Test",drive.followPathCommand("1st Test"));
     SmartDashboard.putData("Auto Chooser", autoChooser);
 
     configureBindings();

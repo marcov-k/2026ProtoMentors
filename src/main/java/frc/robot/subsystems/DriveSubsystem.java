@@ -1,5 +1,12 @@
 package frc.robot.subsystems;
 
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.config.PIDConstants;
+import com.pathplanner.lib.config.RobotConfig;
+import com.pathplanner.lib.controllers.PPHolonomicDriveController;
+import com.pathplanner.lib.path.PathPlannerPath;
+
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -18,6 +25,8 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+
+
 import java.util.function.BooleanSupplier;
 import com.studica.frc.AHRS;
 
@@ -113,6 +122,28 @@ public class DriveSubsystem extends SubsystemBase {
 
         SmartDashboard.putData("Field", field);
         SmartDashboard.putData("VisionField", visionfield);
+
+        try {
+            RobotConfig config = RobotConfig.fromGUISettings();
+
+            AutoBuilder.configure(
+                this::getPose,
+                this::resetOdometry,
+                this::getRobotRelativeSpeeds,
+                this::driveRobotRelative,
+                new PPHolonomicDriveController(
+                    new PIDConstants(.20, 0.0, 0.0), // translation PID
+                    new PIDConstants(.20, 0.0, 0.0)  // rotation PID
+                ),
+                config,
+                () -> DriverStation.getAlliance().isPresent()
+                        && DriverStation.getAlliance().get() == DriverStation.Alliance.Red,
+                this
+            );
+        } catch (Exception e) {
+            DriverStation.reportError("Failed to configure PathPlanner AutoBuilder", e.getStackTrace());
+        }
+
     }
 
     private SwerveModulePosition[] getModulePositions() {
@@ -122,6 +153,27 @@ public class DriveSubsystem extends SubsystemBase {
             rearLeft.getPosition(),
             rearRight.getPosition()
         };
+    }
+
+    // For PathPlanner
+    public ChassisSpeeds getRobotRelativeSpeeds() {
+        return kDriveKinematics.toChassisSpeeds(
+            frontLeft.getState(),
+            frontRight.getState(),
+            rearLeft.getState(),
+            rearRight.getState()
+        );
+    }
+
+    // PathPlanner - Follow Path Command
+    public Command followPathCommand(String pathName) {
+        try {
+            PathPlannerPath path = PathPlannerPath.fromPathFile(pathName);        
+            return AutoBuilder.followPath(path);
+        } catch (Exception e) {
+            DriverStation.reportError("Unable to load path: " + pathName, e.getStackTrace());
+            return Commands.none();
+        }
     }
 
     // Get current estimated pose from Odometry
@@ -235,6 +287,17 @@ public class DriveSubsystem extends SubsystemBase {
         rearLeft.setDesiredState(swerveModuleStates[2]);
         rearRight.setDesiredState(swerveModuleStates[3]);
 
+    }
+
+    // For PathPlanner
+    public void driveRobotRelative(ChassisSpeeds speeds) {
+        var swerveModuleStates = kDriveKinematics.toSwerveModuleStates(speeds);
+        SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, kMaxSpeedMetersPerSecond);
+
+        frontLeft.setDesiredState(swerveModuleStates[0]);
+        frontRight.setDesiredState(swerveModuleStates[1]);
+        rearLeft.setDesiredState(swerveModuleStates[2]);
+        rearRight.setDesiredState(swerveModuleStates[3]);
     }
 
     // Drive Command
