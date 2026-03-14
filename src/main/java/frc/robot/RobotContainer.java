@@ -6,7 +6,9 @@ package frc.robot;
 
 import java.util.function.DoubleSupplier;
 
+import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.commands.PathPlannerAuto;
+import com.pathplanner.lib.events.EventTrigger;
 
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -20,7 +22,7 @@ import frc.robot.commands.*;
 
 public class RobotContainer {
 
-  public final DriveSubsystem drive = new DriveSubsystem();
+  public final DriveSubsystem drive;
   public final Intake intake = new Intake();
   public final Launcher launcher = new Launcher();
   public final Climber climber = new Climber();
@@ -30,10 +32,19 @@ public class RobotContainer {
   private final SendableChooser<Command> autoChooser = new SendableChooser<>();
 
   public RobotContainer() {
+
+    // PathPlanner Named Commands
+    new EventTrigger("Start Intake").whileTrue(intake.run());
+    new EventTrigger("Stop Intake").onTrue(intake.stop());
+    NamedCommands.registerCommand("IntakeStart", intake.startrunning());
+    NamedCommands.registerCommand("IntakeStop", intake.stop());
+
+    // Instantiate Drive
+    drive = new DriveSubsystem();
+    
     // Auto Chooser
-    autoChooser.setDefaultOption("Do Nothing", null);
-    autoChooser.addOption("Path Planner Test", new PathPlannerAuto("Auto1stTest"));
-    autoChooser.addOption("Left Side Trench", new PathPlannerAuto("AutoLeftSideTrench"));
+    autoChooser.setDefaultOption("Do Nothing", Commands.none());
+    autoChooser.addOption("Left Side Trench", new PathPlannerAuto("AutoLeftSide"));
     SmartDashboard.putData("Auto Chooser", autoChooser);
 
     configureBindings();

@@ -90,7 +90,7 @@ public class AimAtTargetCommand extends Command {
         Translation2d robotFieldVelocity = new Translation2d(
             robotSpeeds.vxMetersPerSecond,
             robotSpeeds.vyMetersPerSecond
-        ).rotateBy(drive.getHeading());
+        );
 
         // Compensate target based on current velocity
         Translation2d compensatedTarget = target.minus(robotFieldVelocity.times(timeOfFlight));
@@ -140,7 +140,7 @@ public class AimAtTargetCommand extends Command {
     // Lookup Tables by Distance:
     private static final double[] Distance = { 6, 8, 18 };
     private static final double[] Voltage = { 5.35, 5.4, 7};
-    private static final double[] TimeOfFlight = {0.8, 0.88, 1.88};
+    private static final double[] TimeOfFlight = {0.4, 0.6, 0.8};
 
     public static double lookupVoltage(double meters) {
         // Convert meters to feet

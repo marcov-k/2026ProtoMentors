@@ -30,15 +30,15 @@ public class Launcher extends SubsystemBase{
 
     private double targetRpm = 0.0;
     private double targetVoltage = 5.0;
-    private double hopperVoltage = 5.0;
-    private double prelaunchVoltage = 6.0;
+    private double hopperVoltage = 3.5;
+    private double prelaunchVoltage = 5.5;
     private DoubleSupplier targetVoltageSupplier;
     
 
     static {
         DefaultConfig.smartCurrentLimit(50);
         DefaultConfig.idleMode(IdleMode.kCoast);
-        DefaultConfig.openLoopRampRate(1.0);
+        DefaultConfig.openLoopRampRate(1.5);
         DefaultConfig.inverted(true);
         DefaultConfig.voltageCompensation(12);
         DefaultConfig.closedLoop.allowedClosedLoopError(100.0, ClosedLoopSlot.kSlot0);
@@ -84,7 +84,7 @@ public class Launcher extends SubsystemBase{
     public Command run() {
         return Commands.sequence(
             Commands.runOnce(() -> LaunchMotor.setVoltage(targetVoltageSupplier.getAsDouble())),
-            Commands.waitSeconds(0.5), 
+            Commands.waitSeconds(1.3), 
             Commands.runOnce(() -> PreLaunchMotor.setVoltage(prelaunchVoltage)),
             Commands.runOnce(() -> HopperMotor.setVoltage(hopperVoltage))
         );

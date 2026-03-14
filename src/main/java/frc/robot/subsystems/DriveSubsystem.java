@@ -36,7 +36,7 @@ public class DriveSubsystem extends SubsystemBase {
     /* ~~~~~~~~~ */
 
     // Controller Speed Limits
-    public static double kSpeedLimit = 0.5;
+    public static double kSpeedLimit = 0.65;
     public static final double kControllerDeadband = 0.03;
     
     // Declare 4 instances of SwerveModules
@@ -145,8 +145,9 @@ public class DriveSubsystem extends SubsystemBase {
                     new PIDConstants(.20, 0.0, 0.0)  // rotation PID
                 ),
                 config,
-                () -> DriverStation.getAlliance().isPresent()
-                        && DriverStation.getAlliance().get() == DriverStation.Alliance.Red,
+                () -> DriverStation.getAlliance()
+                      .map(a -> a == DriverStation.Alliance.Red)
+                      .orElse(false),
                 this
             );
         } catch (Exception e) {
