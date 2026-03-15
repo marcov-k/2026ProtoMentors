@@ -53,6 +53,7 @@ public class DriveSubsystem extends SubsystemBase {
     private final VisionSubsystem vision = new VisionSubsystem();
     private boolean visionLocked;
     Pose2d lastVisionPose;
+    private int visionLockCycles = 0;
 
     // Fields for the DashBoard
     private final Field2d field = new Field2d();
@@ -180,13 +181,17 @@ public class DriveSubsystem extends SubsystemBase {
             double delta = current.getTranslation().getDistance(visionPose.getTranslation());
             double dtheta = Math.abs(current.getRotation().minus(visionPose.getRotation()).getRadians());
 
-            // Reject crazy jumps once locked in
-            if (delta > 1.0 && visionLocked) return;
-            else if (delta > 6.0) return;
-            if (dtheta > Math.toRadians(60) && visionLocked) return;
-
-            // Allow one crazy jump based on vision when we can see at least 2 tags, then lock it in.
-            if (m.tagCount() >= 2 ) visionLocked = true;
+            // Vision must see more than 2 tags for 10 consecutive cycles before we begin rejecting jumps. 
+            if (!visionLocked) {
+                if (m.tagCount() >= 2 && visionLockCycles >= 10) 
+                    visionLocked = true;
+                else if (m.tagCount() >= 2)
+                    visionLockCycles++;
+                else 
+                    visionLockCycles = 0;
+            }
+            // Reject jumps greater then 1 meter or 60 degrees once vision has locked 
+            else if (delta > 1.0 || dtheta > Math.toRadians(80)) return;
 
             // Integrate vision pose into Swerve Pose
             poseEstimator.addVisionMeasurement(visionPose, m.timestampSeconds());
