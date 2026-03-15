@@ -194,11 +194,7 @@ public class DriveSubsystem extends SubsystemBase {
         });
 
         // Update SmartDashboard with pose
-        field.setRobotPose(getPose());        
-        SmartDashboard.putNumber("Pose X (m)", getPose().getX());
-        SmartDashboard.putNumber("Pose Y (m)", getPose().getY());
-        SmartDashboard.putNumber("Pose Heading (deg)", getHeading().getDegrees());
-        SmartDashboard.putNumber("Raw gyro yaw", gyro.getYaw());        
+        field.setRobotPose(getPose());               
     }
 
     /* SWERVE */
@@ -297,8 +293,8 @@ public class DriveSubsystem extends SubsystemBase {
 
     // Reset Pose based on latest vision pose
     public void setPoseFromVision() {
-        resetOdometry(lastVisionPose);
-        return; 
+        if (lastVisionPose == null) return;
+        resetOdometry(lastVisionPose);        
     }
 
 

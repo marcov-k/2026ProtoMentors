@@ -53,24 +53,14 @@ public class VisionSubsystem extends SubsystemBase {
         PhotonPipelineResult result = camera.getLatestResult();
         Optional<EstimatedRobotPose> estimate = poseEstimator.update(result);
         lastEstimatedPose = estimate;
-
         if (estimate.isEmpty()) {
             SmartDashboard.putBoolean("Vision/HasPose", false);
             return Optional.empty();
         }
-
         EstimatedRobotPose erp = estimate.get();
-
         int tagCount = result.hasTargets() ? result.getTargets().size() : 0;
         SmartDashboard.putBoolean("Vision/HasPose", true);
-        SmartDashboard.putNumber("Vision/TagCount", tagCount);
-        SmartDashboard.putNumber("Vision/Timestamp", erp.timestampSeconds);
-
         Pose2d pose2d = erp.estimatedPose.toPose2d();
-        SmartDashboard.putNumber("Vision/PoseX", pose2d.getX());
-        SmartDashboard.putNumber("Vision/PoseY", pose2d.getY());
-        SmartDashboard.putNumber("Vision/PoseRotDeg", pose2d.getRotation().getDegrees());
-
         return Optional.of(new VisionMeasurement(pose2d, erp.timestampSeconds, tagCount));
     }
 
