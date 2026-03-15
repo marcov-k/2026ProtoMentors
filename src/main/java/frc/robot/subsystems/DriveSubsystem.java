@@ -64,12 +64,12 @@ public class DriveSubsystem extends SubsystemBase {
     // SPARK MAX CAN IDs - Driving Motors
     public static final int kFrontLeftDrivingCanId = 2;
     public static final int kFrontRightDrivingCanId = 1;
-    public static final int kRearRightDrivingCanId = 4;
-    public static final int kRearLeftDrivingCanId = 3;    
+    public static final int kRearRightDrivingCanId = 6;
+    public static final int kRearLeftDrivingCanId = 5;    
 
     // SPARK MAX CAN IDs - Turning Motors
-    public static final int kFrontLeftTurningCanId = 6;    
-    public static final int kFrontRightTurningCanId = 5;
+    public static final int kFrontLeftTurningCanId = 4;    
+    public static final int kFrontRightTurningCanId = 3;
     public static final int kRearRightTurningCanId = 8;
     public static final int kRearLeftTurningCanId = 7;  
 

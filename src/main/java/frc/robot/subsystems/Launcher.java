@@ -24,9 +24,9 @@ public class Launcher extends SubsystemBase{
     private SparkMax LaunchMotor; 
     private SparkMax PreLaunchMotor;    
     private SparkMax HopperMotor;
-    public static final int kHopperMotorCanID = 9;
-    public static final int kPreLaunchMotorCanID = 12;
-    public static final int kLaunchMotorCanID = 10;
+    public static final int kHopperMotorCanID = 12;
+    public static final int kPreLaunchMotorCanID = 10;
+    public static final int kLaunchMotorCanID = 9;
 
     private double targetRpm = 0.0;
     private double targetVoltage = 5.0;
