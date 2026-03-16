@@ -82,27 +82,46 @@ public class Launcher extends SubsystemBase{
     }
 
     public Command run() {
-        return Commands.sequence(
-            Commands.runOnce(() -> LaunchMotor.setVoltage(targetVoltageSupplier.getAsDouble())),
-            Commands.waitSeconds(1.3), 
-            Commands.runOnce(() -> PreLaunchMotor.setVoltage(prelaunchVoltage)),
-            Commands.runOnce(() -> HopperMotor.setVoltage(hopperVoltage))
-        );
+        return this.runOnce(() -> LaunchMotor.setVoltage(targetVoltageSupplier.getAsDouble()))
+            .andThen(Commands.waitSeconds(1.3))
+            .andThen(this.runOnce(() -> PreLaunchMotor.setVoltage(prelaunchVoltage)))
+            .andThen(this.runOnce(() -> HopperMotor.setVoltage(hopperVoltage)));
     }
 
     public Command dump() {
         return Commands.sequence(
-            Commands.runOnce(() -> LaunchMotor.setVoltage(-4)),            
-            Commands.runOnce(() -> PreLaunchMotor.setVoltage(-4)),
-            Commands.runOnce(() -> HopperMotor.setVoltage(-4))
-        );
+            this.runOnce(() -> LaunchMotor.setVoltage(-4)),
+            this.runOnce(() -> PreLaunchMotor.setVoltage(-4)),            
+            this.run(() -> HopperMotor.setVoltage(-4)))
+            .finallyDo(() -> {
+                HopperMotor.stopMotor(); 
+                PreLaunchMotor.stopMotor();
+                LaunchMotor.stopMotor();
+            });
     }
 
     public Command stop() {
-        return Commands.runOnce(() -> {
+        return this.runOnce(() -> {
             HopperMotor.stopMotor(); 
             PreLaunchMotor.stopMotor();
             LaunchMotor.stopMotor();
         });
     }
+
+
+    public Command fire() {
+        return Commands.sequence(
+            this.runOnce(() -> LaunchMotor.setVoltage(targetVoltageSupplier.getAsDouble())),
+            Commands.waitSeconds(1.3),
+            this.run(() -> {
+                PreLaunchMotor.setVoltage(prelaunchVoltage);
+                HopperMotor.setVoltage(hopperVoltage);
+            })
+        ).finallyDo(() -> {
+            LaunchMotor.stopMotor();
+            PreLaunchMotor.stopMotor();
+            HopperMotor.stopMotor();
+        });
+    }
+
 }

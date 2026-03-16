@@ -5,7 +5,6 @@ import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
 
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
@@ -32,18 +31,21 @@ public class Intake extends SubsystemBase{
     }
 
     public Command run() {
-        return Commands.runOnce(() -> IntakeMotor.setVoltage(6.0));
-    }
-
-    public Command startrunning() {
-        return Commands.run(() -> IntakeMotor.setVoltage(6.0));
+        return this.runOnce(() -> IntakeMotor.setVoltage(6.0));
     }
 
     public Command dump() {
-        return Commands.runOnce(() -> IntakeMotor.setVoltage(-6.0));
+        return this.run(() -> IntakeMotor.setVoltage(-6.0))
+                   .finallyDo(() -> IntakeMotor.stopMotor());
     }
 
     public Command stop() {
-        return Commands.runOnce(() -> IntakeMotor.stopMotor());
+        return this.runOnce(() -> IntakeMotor.stopMotor());
     }
+
+    public Command fire() {
+        return this.run(() -> IntakeMotor.setVoltage(6.0))
+                   .finallyDo(() -> IntakeMotor.stopMotor());
+    }
+
 }

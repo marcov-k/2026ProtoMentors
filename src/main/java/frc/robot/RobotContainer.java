@@ -31,9 +31,9 @@ public class RobotContainer {
   public RobotContainer() {
 
     // PathPlanner Named Commands
-    new EventTrigger("Start Intake").whileTrue(intake.run());
+    new EventTrigger("Start Intake").whileTrue(intake.fire());
     new EventTrigger("Stop Intake").onTrue(intake.stop());
-    new EventTrigger("Start Firing").whileTrue(launcher.run());
+    new EventTrigger("Start Firing").whileTrue(launcher.fire());
     new EventTrigger("Stop Firing").onTrue(launcher.stop());
     new EventTrigger("Dump").whileTrue(intake.dump());
     new EventTrigger("Raise Climber").whileTrue(climber.raise());
@@ -57,17 +57,20 @@ public class RobotContainer {
   }
 
   private void configureBindings() {
-    DoubleSupplier fwd = () -> edu.wpi.first.math.MathUtil.applyDeadband(controller.getLeftY() * DriveSubsystem.kSpeedLimit, 0.01);
-    DoubleSupplier str = () -> edu.wpi.first.math.MathUtil.applyDeadband(controller.getLeftX() * DriveSubsystem.kSpeedLimit, 0.01);
+    DoubleSupplier fwd = () -> edu.wpi.first.math.MathUtil.applyDeadband(controller.getLeftY() * DriveSubsystem.kSpeedLimit, DriveSubsystem.kControllerDeadband);
+    DoubleSupplier str = () -> edu.wpi.first.math.MathUtil.applyDeadband(controller.getLeftX() * DriveSubsystem.kSpeedLimit, DriveSubsystem.kControllerDeadband);
 
     
-    controller.leftTrigger().onTrue(intake.run()).onFalse(intake.stop());
-    controller.leftBumper().onTrue( Commands.parallel(intake.dump(),launcher.dump())).onFalse( Commands.parallel(intake.stop(),launcher.stop()));
+    // controller.leftTrigger().onTrue(intake.run()).onFalse(intake.stop());
+    controller.leftTrigger().whileTrue(intake.fire());
+    controller.leftBumper().whileTrue( Commands.sequence(launcher.dump(),Commands.waitSeconds(1.0), intake.dump()));
+    // controller.leftBumper().onTrue( Commands.parallel(intake.dump(),launcher.dump())).onFalse( Commands.parallel(intake.stop(),launcher.stop()));
     controller.povUp().onTrue(climber.raise()).onFalse(climber.stop());
     controller.povDown().onTrue(climber.lower()).onFalse(climber.stop());
     controller.povRight().whileTrue(launcher.increaseLaunchVoltage());
     controller.povLeft().whileTrue(launcher.decreaseLaunchVoltage());
-    controller.rightTrigger().onTrue( Commands.parallel(intake.run(),launcher.run())).onFalse( Commands.parallel(intake.stop(),launcher.stop()));
+    // controller.rightTrigger().onTrue( Commands.parallel(intake.run(),launcher.run())).onFalse( Commands.parallel(intake.stop(),launcher.stop()));
+    controller.rightTrigger().whileTrue(Commands.parallel(launcher.fire(), intake.fire()));
     controller.rightBumper().whileTrue(new AimAtTargetCommand(drive, launcher, fwd, str, ()-> fieldRelative));
     controller.y().onTrue(Commands.runOnce(drive::setPoseFromVision));       
     controller.start().onTrue(new InstantCommand(() -> fieldRelative = !fieldRelative));
