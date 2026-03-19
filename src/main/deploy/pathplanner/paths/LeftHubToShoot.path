@@ -34,7 +34,7 @@
   "eventMarkers": [
     {
       "name": "Start Firing",
-      "waypointRelativePos": 0.5254691689008045,
+      "waypointRelativePos": 0.511904761904762,
       "endWaypointRelativePos": null,
       "command": null
     }
