@@ -5,65 +5,80 @@
 package frc.robot;
 
 import java.util.function.DoubleSupplier;
-import java.util.function.BooleanSupplier;
-
+import com.pathplanner.lib.commands.PathPlannerAuto;
+import com.pathplanner.lib.events.EventTrigger;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import frc.robot.field.AllianceUtil;
 import frc.robot.subsystems.*;
 import frc.robot.commands.*;
-import frc.robot.subsystems.Constants.*;
 
-public class RobotContainer
-{
-    public final DriveSubsystem drive = new DriveSubsystem();
-    public final Intake intake = new Intake();
-    public final Launcher launcher = new Launcher();
-    private final CommandXboxController controller = new CommandXboxController(0);
-    private Boolean fieldRelative = true;
 
-    public RobotContainer()
-    {
-        configureBindings();
-        drive.setDefaultCommand(drive.driveCommand(controller, () -> fieldRelative));    
-        launcher.setDefaultCommand(Commands.run(launcher::stopAll, launcher));
-    }
+public class RobotContainer {
 
-    private void configureBindings()
-    {
-        DoubleSupplier fwd = () -> edu.wpi.first.math.MathUtil.applyDeadband(controller.getLeftY() * DriveConstants.kSpeedLimit, 0.02);
-        DoubleSupplier str = () -> edu.wpi.first.math.MathUtil.applyDeadband(controller.getLeftX() * DriveConstants.kSpeedLimit, 0.02);
-        BooleanSupplier fieldRel = () -> fieldRelative;
-        
-        controller.leftTrigger().onTrue(intake.run()).onFalse(intake.stop());
-        controller.leftBumper().onTrue(intake.dump()).onFalse(intake.stop());
-        controller.rightTrigger().onTrue(launcher.run()).onFalse(launcher.stop());
+  public final DriveSubsystem drive;
+  public final Intake intake = new Intake();
+  public final Launcher launcher = new Launcher();
+  public final Climber climber = new Climber();
+  public final LEDSubsystem led = new LEDSubsystem();
+  private final CommandXboxController controller = new CommandXboxController(0);
+  private Boolean fieldRelative = true;
+  private final SendableChooser<Command> autoChooser = new SendableChooser<>();
 
-        controller.rightBumper().whileTrue(
-            Commands.parallel(
-                new AimAtTargetCommand(drive, fwd, str, fieldRel, AllianceUtil::getAllianceHubCenter),
-                new AutoRPMFromDistanceCommand(drive, launcher, AllianceUtil::getAllianceHubCenter)
-            )
-        );
+  public RobotContainer() {
 
-        controller.b().whileTrue(
-            Commands.sequence(
-                new DriveToTargetCommand(drive, AllianceUtil::getAllianceLaunchPos)
-            )
-        );
+    // PathPlanner Named Commands
+    new EventTrigger("Start Intake").whileTrue(intake.fire());
+    new EventTrigger("Stop Intake").onTrue(intake.stop());
+    new EventTrigger("Start Firing").whileTrue(launcher.fire());
+    new EventTrigger("Stop Firing").onTrue(launcher.stop());
+    new EventTrigger("Dump").whileTrue(intake.dump());
+    new EventTrigger("Raise Climber").whileTrue(climber.raise());
+    new EventTrigger("Lower Climber").onTrue(climber.lower());
+    
 
-        controller.a().onTrue(Commands.runOnce(drive::zeroHeading, drive));    
-        controller.start().onTrue(toggleFieldRelative());
-    }
 
-    public Command getAutonomousCommand()
-    {
-        return Commands.print("No autonomous command configured");
-    }
+    // Instantiate Drive
+    drive = new DriveSubsystem();
+    
+    // Auto Chooser
+    autoChooser.setDefaultOption("Do Nothing", Commands.none());
+    autoChooser.addOption("Left Trench", new PathPlannerAuto("AutoLeftSide"));
+    autoChooser.addOption("Right Trench", new PathPlannerAuto("AutoRightSide"));
+    autoChooser.addOption("Left of Center", new PathPlannerAuto("AutoCenterLeft"));
+    autoChooser.addOption("Right of Center", new PathPlannerAuto("AutoCenterRight"));
+    SmartDashboard.putData("Auto Chooser", autoChooser);
 
-    public Command toggleFieldRelative()
-    {
-        return Commands.runOnce(() -> {this.fieldRelative = !this.fieldRelative;});
-    }
+    configureBindings();
+    drive.setDefaultCommand(drive.driveCommand(controller, () -> fieldRelative));        
+  }
+
+  private void configureBindings() {
+    DoubleSupplier fwd = () -> edu.wpi.first.math.MathUtil.applyDeadband(controller.getLeftY() * DriveSubsystem.kSpeedLimit, DriveSubsystem.kControllerDeadband);
+    DoubleSupplier str = () -> edu.wpi.first.math.MathUtil.applyDeadband(controller.getLeftX() * DriveSubsystem.kSpeedLimit, DriveSubsystem.kControllerDeadband);
+
+    
+    // controller.leftTrigger().onTrue(intake.run()).onFalse(intake.stop());
+    controller.leftTrigger().whileTrue(intake.fire());
+    controller.leftBumper().whileTrue( Commands.sequence(launcher.dump(),Commands.waitSeconds(1.0), intake.dump()));
+    // controller.leftBumper().onTrue( Commands.parallel(intake.dump(),launcher.dump())).onFalse( Commands.parallel(intake.stop(),launcher.stop()));
+    controller.povUp().onTrue(climber.raise()).onFalse(climber.stop());
+    controller.povDown().onTrue(climber.lower()).onFalse(climber.stop());
+    controller.povRight().whileTrue(launcher.increaseLaunchVoltage());
+    controller.povLeft().whileTrue(launcher.decreaseLaunchVoltage());
+    // controller.rightTrigger().onTrue( Commands.parallel(intake.run(),launcher.run())).onFalse( Commands.parallel(intake.stop(),launcher.stop()));
+    controller.rightTrigger().whileTrue(Commands.parallel(launcher.fire(), intake.fire()));
+    controller.rightBumper().whileTrue(new AimAtTargetCommand(drive, launcher, fwd, str, ()-> fieldRelative));
+    controller.y().onTrue(Commands.runOnce(drive::setPoseFromVision));       
+    controller.start().onTrue(new InstantCommand(() -> fieldRelative = !fieldRelative));
+  }
+
+  public Command getAutonomousCommand() {
+      return autoChooser.getSelected();
+  }
+
+
 }

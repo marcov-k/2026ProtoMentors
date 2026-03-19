@@ -1,26 +1,64 @@
 package frc.robot.field;
-
 import java.util.Optional;
 
+import edu.wpi.first.math.geometry.Rectangle2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 
-public class AllianceUtil
-{
-    public static Translation2d getAllianceHubCenter()
-    {
-        return isRed() ? FieldConstants.RED_HUB_CENTER : FieldConstants.BLUE_HUB_CENTER;
+public class AllianceUtil {
+    
+    public final class FieldConstants {
+        public static final Translation2d BLUE_HUB_CENTER = new Translation2d( 4.574159, 4.0213534);
+        public static final Translation2d RED_HUB_CENTER = new Translation2d(11.9388636,4.0213534);
+            
+        public static final Rectangle2d BLUE_ALLIANCE_ZONE = new Rectangle2d(new Translation2d(0,0), new Translation2d(4.57, 8.0));
+        public static final Rectangle2d NEUTRAL_ZONE = new Rectangle2d(new Translation2d(4.57,0), new Translation2d(11.94, 8.0));
+        public static final Rectangle2d RED_ALLIANCE_ZONE = new Rectangle2d(new Translation2d(11.94,0), new Translation2d(16.5, 8.0));
+
+        public static final Translation2d BLUE_ALLIANCE_ZONE_UPPER = new Translation2d(2.29393026, 6.0147558);
+        public static final Translation2d BLUE_ALLIANCE_ZONE_LOWER = new Translation2d(2.29393026, 2.0245832);
+
+        public static final Translation2d RED_ALLIANCE_ZONE_UPPER = new Translation2d(14.2190978, 6.0147558);
+        public static final Translation2d RED_ALLIANCE_ZONE_LOWER = new Translation2d(14.2190978, 2.0245832);
+
     }
 
-    public static Translation2d getAllianceLaunchPos()
-    {
-        return isRed() ? FieldConstants.RED_LAUNCH_POS : FieldConstants.BLUE_LAUNCH_POS;
-    }
-
-    public static boolean isRed()
-    {
+    public static Translation2d getAllianceHubCenter() {
         Optional<DriverStation.Alliance> alliance = DriverStation.getAlliance();
 
-        return alliance.isPresent() && alliance.get() == DriverStation.Alliance.Red;
+        boolean isRed = alliance.isPresent()
+                && alliance.get() == DriverStation.Alliance.Red;
+
+        return isRed
+                ? FieldConstants.RED_HUB_CENTER
+                : FieldConstants.BLUE_HUB_CENTER;
     }
+
+    public static boolean isRed() {
+        return DriverStation.getAlliance()
+            .map(a -> a == DriverStation.Alliance.Red)
+            .orElse(false);
+    }
+
+    public static boolean isInAllianceZone(Translation2d pos) {
+        return isRed()
+            ? FieldConstants.RED_ALLIANCE_ZONE.contains(pos)
+            : FieldConstants.BLUE_ALLIANCE_ZONE.contains(pos);
+    }
+
+    public static boolean isInNeutralZone(Translation2d pos) {
+        return FieldConstants.NEUTRAL_ZONE.contains(pos);
+    }
+
+    public static Translation2d getBestAllianceZoneShotTarget(Translation2d robotPos) {
+        Translation2d upper = isRed() ? FieldConstants.RED_ALLIANCE_ZONE_UPPER : FieldConstants.BLUE_ALLIANCE_ZONE_UPPER;
+        Translation2d lower = isRed() ? FieldConstants.RED_ALLIANCE_ZONE_LOWER : FieldConstants.BLUE_ALLIANCE_ZONE_LOWER;
+
+        double upperDist = robotPos.getDistance(upper);
+        double lowerDist = robotPos.getDistance(lower);
+
+        return upperDist <= lowerDist ? upper : lower;
+    }
+
 }
+

@@ -26,10 +26,7 @@ public class VisionSubsystem extends SubsystemBase
     private final PhotonCamera camera;
     private final PhotonPoseEstimator poseEstimator;
     
-    // TODO: Replace with your actual robot-to-camera transform (meters, radians).
-    // Coordinate convention: +X forward, +Y left, +Z up (WPILib).
-    // Example: new Transform3d(new Translation3d(0.30, 0.00, 0.55), new Rotation3d(0, Units.degreesToRadians(-15), 0))
-    private final Transform3d robotToCamera = new Transform3d(new Translation3d(0.30, 0.0, 0.55), new Rotation3d(0, Units.degreesToRadians(0), 0));
+    private final Transform3d robotToCamera = new Transform3d(new Translation3d(0.38, -0.07, 0.45), new Rotation3d(0, Units.degreesToRadians(0), 0));
 
     // Optional: keep latest raw vision pose for dashboard
     private Optional<EstimatedRobotPose> lastEstimatedPose = Optional.empty();
@@ -56,24 +53,14 @@ public class VisionSubsystem extends SubsystemBase
         PhotonPipelineResult result = camera.getLatestResult();
         Optional<EstimatedRobotPose> estimate = poseEstimator.update(result);
         lastEstimatedPose = estimate;
-
         if (estimate.isEmpty()) {
             SmartDashboard.putBoolean("Vision/HasPose", false);
             return Optional.empty();
         }
-
         EstimatedRobotPose erp = estimate.get();
-
         int tagCount = result.hasTargets() ? result.getTargets().size() : 0;
         SmartDashboard.putBoolean("Vision/HasPose", true);
-        SmartDashboard.putNumber("Vision/TagCount", tagCount);
-        SmartDashboard.putNumber("Vision/Timestamp", erp.timestampSeconds);
-
         Pose2d pose2d = erp.estimatedPose.toPose2d();
-        SmartDashboard.putNumber("Vision/PoseX", pose2d.getX());
-        SmartDashboard.putNumber("Vision/PoseY", pose2d.getY());
-        SmartDashboard.putNumber("Vision/PoseRotDeg", pose2d.getRotation().getDegrees());
-
         return Optional.of(new VisionMeasurement(pose2d, erp.timestampSeconds, tagCount));
     }
 

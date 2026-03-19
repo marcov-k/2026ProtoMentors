@@ -8,79 +8,80 @@ import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 
-public class Robot extends TimedRobot
-{
-    private Command m_autonomousCommand;
+public class Robot extends TimedRobot {
+  private Command auto;
 
-    private final RobotContainer m_robotContainer;
+  private final RobotContainer m_robotContainer;
 
-    public Robot()
-    {
-        m_robotContainer = new RobotContainer();
+
+  public Robot() {
+    m_robotContainer = new RobotContainer();
+  }
+
+  @Override
+  public void robotInit() {
+    m_robotContainer.led.fillColor(120, 120, 120);
+  }
+
+  @Override
+  public void robotPeriodic() {
+    CommandScheduler.getInstance().run();
+  }
+
+  @Override
+  public void disabledInit() {
+    m_robotContainer.led.disabledInit();
+  }
+
+  @Override
+  public void disabledPeriodic() {}
+
+  @Override
+  public void disabledExit() {}
+
+  @Override
+  public void autonomousInit() {
+
+    // Turn on the LEDs 
+    m_robotContainer.led.autonomousInit();
+
+    // Then proceed with autonomous
+    auto = m_robotContainer.getAutonomousCommand();
+    if (auto != null) {
+      CommandScheduler.getInstance().schedule(auto);
     }
+  }
 
-    @Override
-    public void robotPeriodic()
-    {
-        CommandScheduler.getInstance().run();
+  @Override
+  public void autonomousPeriodic() {}
+
+  @Override
+  public void autonomousExit() {}
+
+  @Override
+  public void teleopInit() {
+    if (auto != null) {
+      auto.cancel();
     }
+    
+    // Turn on the LEDs
+    m_robotContainer.led.teleopInit();
+  }
 
-    @Override
-    public void disabledInit() {}
+  @Override
+  public void teleopPeriodic() {}
 
-    @Override
-    public void disabledPeriodic() {}
+  @Override
+  public void teleopExit() {}
 
-    @Override
-    public void disabledExit() {}
+  @Override
+  public void testInit() {
+    CommandScheduler.getInstance().cancelAll();
+  }
 
-    @Override
-    public void autonomousInit()
-    {
-        // Get assumed starting position from Driver Station 
-        m_robotContainer.drive.setPoseFromDsCommand().schedule();
+  @Override
+  public void testPeriodic() {}
 
-        // Then proceed with autonomous
-        m_autonomousCommand = m_robotContainer.getAutonomousCommand();
-        if (m_autonomousCommand != null)
-        {
-            CommandScheduler.getInstance().schedule(m_autonomousCommand);
-        }
-    }
-
-    @Override
-    public void autonomousPeriodic() {}
-
-    @Override
-    public void autonomousExit() {}
-
-    @Override
-    public void teleopInit()
-    {
-        if (m_autonomousCommand != null)
-        {
-            m_autonomousCommand.cancel();
-        }
-
-        // Get assumed starting position - REMOVE THIS BEFORE A MATCH
-        m_robotContainer.drive.setPoseFromDsCommand().schedule();
-    }
-
-    @Override
-    public void teleopPeriodic() {}
-
-    @Override
-    public void teleopExit() {}
-
-    @Override
-    public void testInit()
-    {
-        CommandScheduler.getInstance().cancelAll();
-    }
-
-    @Override
-    public void testPeriodic() {}
-
-    @Override
-    public void testExit() {}
+  @Override
+  public void testExit() {}
 }
