@@ -30,7 +30,7 @@ public class Launcher extends SubsystemBase{
 
     private double targetRpm = 0.0;
     private double targetVoltage = 5.0;
-    private double hopperVoltage = 3.5;
+    private double hopperVoltage = 4.5;
     private double prelaunchVoltage = 5.5;
     private DoubleSupplier targetVoltageSupplier;
     
