@@ -18,22 +18,23 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
-import frc.robot.subsystems.Constants.VisionConstants;
+public class VisionSubsystem extends SubsystemBase {
 
-public class VisionSubsystem extends SubsystemBase
-{
     public record VisionMeasurement(Pose2d pose, double timestampSeconds, int tagCount) {}
     private final PhotonCamera camera;
     private final PhotonPoseEstimator poseEstimator;
+
+    private final String cameraName = "FrontLeftCamera";
+
     
     private final Transform3d robotToCamera = new Transform3d(new Translation3d(0.38, -0.07, 0.45), new Rotation3d(0, Units.degreesToRadians(0), 0));
 
     // Optional: keep latest raw vision pose for dashboard
     private Optional<EstimatedRobotPose> lastEstimatedPose = Optional.empty();
 
-    public VisionSubsystem()
-    {
-        this.camera = new PhotonCamera(VisionConstants.kCameraName);
+    public VisionSubsystem() {
+        
+        this.camera = new PhotonCamera(cameraName);
 
         AprilTagFieldLayout fieldLayout = AprilTagFields.k2026RebuiltAndymark.loadAprilTagLayoutField();
 
@@ -47,8 +48,7 @@ public class VisionSubsystem extends SubsystemBase
         this.poseEstimator.setMultiTagFallbackStrategy(PoseStrategy.LOWEST_AMBIGUITY);
     }
 
-    public Optional<VisionMeasurement> getMeasurement(Pose2d referencePose)
-    {
+    public Optional<VisionMeasurement> getMeasurement(Pose2d referencePose) {
         poseEstimator.setReferencePose(referencePose);
         PhotonPipelineResult result = camera.getLatestResult();
         Optional<EstimatedRobotPose> estimate = poseEstimator.update(result);
@@ -64,13 +64,11 @@ public class VisionSubsystem extends SubsystemBase
         return Optional.of(new VisionMeasurement(pose2d, erp.timestampSeconds, tagCount));
     }
 
-    public Optional<Pose2d> getLastVisionPose2d()
-    {
+    public Optional<Pose2d> getLastVisionPose2d() {
         return lastEstimatedPose.map(p -> p.estimatedPose.toPose2d());
     }
 
-    public void init()
-    {
+    public void init() {
         camera.getLatestResult(); // Warm-up 
     }
 }
