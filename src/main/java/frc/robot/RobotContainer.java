@@ -31,12 +31,12 @@ public class RobotContainer {
   public RobotContainer() {
 
     // PathPlanner Named Commands
-    new EventTrigger("Start Intake").whileTrue(intake.fire());
+    new EventTrigger("Start Intake").onTrue(intake.fire());
     new EventTrigger("Stop Intake").onTrue(intake.stop());
-    new EventTrigger("Start Firing").whileTrue(launcher.fire());
+    new EventTrigger("Start Firing").onTrue(launcher.fire());
     new EventTrigger("Stop Firing").onTrue(launcher.stop());
-    new EventTrigger("Dump").whileTrue(intake.dump());
-    new EventTrigger("Raise Climber").whileTrue(climber.raise());
+    new EventTrigger("Dump").onTrue(intake.dump());
+    new EventTrigger("Raise Climber").onTrue(climber.raise());
     new EventTrigger("Lower Climber").onTrue(climber.lower());
     
 
@@ -63,7 +63,7 @@ public class RobotContainer {
     
     // controller.leftTrigger().onTrue(intake.run()).onFalse(intake.stop());
     controller.leftTrigger().whileTrue(intake.fire());
-    controller.leftBumper().whileTrue( Commands.sequence(launcher.dump(),Commands.waitSeconds(1.0), intake.dump()));
+    controller.leftBumper().whileTrue( Commands.parallel(launcher.dump(), intake.dump()));
     // controller.leftBumper().onTrue( Commands.parallel(intake.dump(),launcher.dump())).onFalse( Commands.parallel(intake.stop(),launcher.stop()));
     controller.povUp().onTrue(climber.raise()).onFalse(climber.stop());
     controller.povDown().onTrue(climber.lower()).onFalse(climber.stop());

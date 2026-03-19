@@ -21,7 +21,7 @@
       },
       "prevControl": {
         "x": 7.665603756708407,
-        "y": 0.7767363595706622
+        "y": 0.7767363595706623
       },
       "nextControl": {
         "x": 7.70616726296959,
@@ -129,7 +129,7 @@
   "eventMarkers": [
     {
       "name": "Start Intake",
-      "waypointRelativePos": 0.7,
+      "waypointRelativePos": 0.6250986582478296,
       "endWaypointRelativePos": null,
       "command": null
     },
@@ -147,7 +147,7 @@
     }
   ],
   "globalConstraints": {
-    "maxVelocity": 0.7,
+    "maxVelocity": 1.5,
     "maxAcceleration": 0.7,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0,
