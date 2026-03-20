@@ -31,7 +31,7 @@ public class Intake extends SubsystemBase{
     }
 
     public Command run() {
-        return this.runOnce(() -> IntakeMotor.setVoltage(6.0));
+        return this.runOnce(() -> IntakeMotor.setVoltage(7.0));
     }
 
     public Command dump() {

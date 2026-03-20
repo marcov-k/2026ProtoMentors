@@ -65,15 +65,13 @@ public class RobotContainer {
     DoubleSupplier str = () -> edu.wpi.first.math.MathUtil.applyDeadband(controller.getLeftX() * DriveSubsystem.kSpeedLimit, DriveSubsystem.kControllerDeadband);
 
     
-    // controller.leftTrigger().onTrue(intake.run()).onFalse(intake.stop());
+    
     controller.leftTrigger().whileTrue(intake.fire());
     controller.leftBumper().whileTrue( Commands.parallel(launcher.dump(), intake.dump()));
-    // controller.leftBumper().onTrue( Commands.parallel(intake.dump(),launcher.dump())).onFalse( Commands.parallel(intake.stop(),launcher.stop()));
     controller.povUp().onTrue(climber.raise()).onFalse(climber.stop());
     controller.povDown().onTrue(climber.lower()).onFalse(climber.stop());
     controller.povRight().whileTrue(launcher.increaseLaunchVoltage());
     controller.povLeft().whileTrue(launcher.decreaseLaunchVoltage());
-    // controller.rightTrigger().onTrue( Commands.parallel(intake.run(),launcher.run())).onFalse( Commands.parallel(intake.stop(),launcher.stop()));
     controller.rightTrigger().whileTrue(Commands.parallel(launcher.fire(), intake.fire()));
     controller.rightBumper().whileTrue(new AimAtTargetCommand(drive, launcher, fwd, str, ()-> fieldRelative));
     controller.y().onTrue(Commands.runOnce(drive::setPoseFromVision));       
