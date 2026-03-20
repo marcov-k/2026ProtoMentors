@@ -36,7 +36,7 @@ public class DriveSubsystem extends SubsystemBase {
     /* ~~~~~~~~~ */
 
     // Controller Speed Limits
-    public static double kSpeedLimit = 0.65;
+    public static double kSpeedLimit = 0.75;
     public static final double kControllerDeadband = 0.03;
     
     // Declare 4 instances of SwerveModules

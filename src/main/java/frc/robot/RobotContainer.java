@@ -47,7 +47,9 @@ public class RobotContainer {
     // Auto Chooser
     autoChooser.setDefaultOption("Do Nothing", Commands.none());
     autoChooser.addOption("Left Trench", new PathPlannerAuto("AutoLeftSide"));
+    autoChooser.addOption("Left Trench Extended", new PathPlannerAuto("AutoLeftSideExtended"));
     autoChooser.addOption("Right Trench", new PathPlannerAuto("AutoRightSide"));
+    autoChooser.addOption("Right Trench Extended", new PathPlannerAuto("AutoRightSideExtended"));
     autoChooser.addOption("Left of Center", new PathPlannerAuto("AutoCenterLeft"));
     autoChooser.addOption("Right of Center", new PathPlannerAuto("AutoCenterRight"));
     SmartDashboard.putData("Auto Chooser", autoChooser);
