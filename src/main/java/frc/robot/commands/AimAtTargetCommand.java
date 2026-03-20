@@ -82,12 +82,14 @@ public class AimAtTargetCommand extends Command {
         double distance = toTarget.getNorm();
         double voltage = lookupVoltage(distance);
         
-        if (drive.vision.visionlost) {
+/*         if (drive.vision.visionlost) {
             launcher.setTargetVoltage(5.8);
         }
         else{
-            launcher.setTargetVoltage(voltage);
-        }
+
+        } */
+
+        launcher.setTargetVoltage(voltage);
 
         // Lookup Time of Flight 
         double timeOfFlight = lookupTimeOfFlight(distance);
