@@ -50,7 +50,7 @@ public class DriveSubsystem extends SubsystemBase {
     private Rotation2d gyroFieldOffset = new Rotation2d();
 
     // Vision 
-    private final VisionSubsystem vision = new VisionSubsystem();
+    public final VisionSubsystem vision = new VisionSubsystem();
     private boolean visionLocked;
     Pose2d lastVisionPose;
     private int visionLockCycles = 0;
