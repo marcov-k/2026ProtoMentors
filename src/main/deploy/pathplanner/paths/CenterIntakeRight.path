@@ -105,19 +105,6 @@
   "constraintZones": [
     {
       "name": "Constraints Zone",
-      "minWaypointRelativePos": 0.726190476190476,
-      "maxWaypointRelativePos": 0.9047619047619049,
-      "constraints": {
-        "maxVelocity": 4.0,
-        "maxAcceleration": 0.7,
-        "maxAngularVelocity": 540.0,
-        "maxAngularAcceleration": 720.0,
-        "nominalVoltage": 12.0,
-        "unlimited": false
-      }
-    },
-    {
-      "name": "Constraints Zone",
       "minWaypointRelativePos": 2.0357142857142856,
       "maxWaypointRelativePos": 2.607142857142857,
       "constraints": {
@@ -128,22 +115,20 @@
         "nominalVoltage": 12.0,
         "unlimited": false
       }
-    },
-    {
-      "name": "Constraints Zone",
-      "minWaypointRelativePos": 4.095238095238095,
-      "maxWaypointRelativePos": 4.5476190476190474,
-      "constraints": {
-        "maxVelocity": 4.0,
-        "maxAcceleration": 0.7,
-        "maxAngularVelocity": 540.0,
-        "maxAngularAcceleration": 720.0,
-        "nominalVoltage": 12.0,
-        "unlimited": false
-      }
     }
   ],
-  "pointTowardsZones": [],
+  "pointTowardsZones": [
+    {
+      "fieldPosition": {
+        "x": 4.62,
+        "y": 4.04
+      },
+      "rotationOffset": 0.0,
+      "minWaypointRelativePos": 4.749999999999994,
+      "maxWaypointRelativePos": 5.0,
+      "name": "Point Towards Zone"
+    }
+  ],
   "eventMarkers": [
     {
       "name": "Start Intake",
@@ -174,7 +159,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -34.919402012457745
+    "rotation": -28.767018475698592
   },
   "reversed": false,
   "folder": null,
