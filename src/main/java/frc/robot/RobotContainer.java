@@ -67,7 +67,7 @@ public class RobotContainer {
     
     
     controller.leftTrigger().whileTrue(intake.fire());
-    controller.leftBumper().whileTrue( Commands.parallel(launcher.dump(), intake.dump()));
+    controller.leftBumper().whileTrue(Commands.parallel(launcher.dump(), intake.dump()));
     controller.povUp().onTrue(climber.raise()).onFalse(climber.stop());
     controller.povDown().onTrue(climber.lower()).onFalse(climber.stop());
     controller.povRight().whileTrue(launcher.increaseLaunchVoltage());
