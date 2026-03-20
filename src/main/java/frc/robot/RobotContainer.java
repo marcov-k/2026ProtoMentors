@@ -52,6 +52,8 @@ public class RobotContainer {
     autoChooser.addOption("Right Trench Extended", new PathPlannerAuto("AutoRightSideExtended"));
     autoChooser.addOption("Left of Center", new PathPlannerAuto("AutoCenterLeft"));
     autoChooser.addOption("Right of Center", new PathPlannerAuto("AutoCenterRight"));
+    autoChooser.addOption("Center Left Intake", new PathPlannerAuto("AutoCenterIntakeLeft"));
+    autoChooser.addOption("Center Intake Right", new PathPlannerAuto("AutoCenterIntakeRight"));
     SmartDashboard.putData("Auto Chooser", autoChooser);
 
     configureBindings();
