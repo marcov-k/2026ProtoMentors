@@ -29,7 +29,7 @@ public class Launcher extends SubsystemBase{
     public static final int kLaunchMotorCanID = 9;
 
     private double targetRpm = 0.0;
-    private double targetVoltage = 5.0;
+    private double targetVoltage = 5.8;
     private double hopperVoltage = 4.5;
     private double prelaunchVoltage = 5.5;
     private DoubleSupplier targetVoltageSupplier;

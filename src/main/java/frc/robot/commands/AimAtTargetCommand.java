@@ -93,7 +93,7 @@ public class AimAtTargetCommand extends Command {
         );
 
         // Compensate target based on current velocity
-        Translation2d compensatedTarget = target.minus(robotFieldVelocity.times(timeOfFlight));
+        Translation2d compensatedTarget = target.minus(robotFieldVelocity.times(-timeOfFlight));
 
         // Recompute Aim vector using compensated target
         Translation2d compensatedToTarget = compensatedTarget.minus(LauncherPose.getTranslation());
