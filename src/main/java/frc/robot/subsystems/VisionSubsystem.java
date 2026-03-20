@@ -25,8 +25,9 @@ public class VisionSubsystem extends SubsystemBase {
     private final PhotonPoseEstimator poseEstimator;
 
     private final String cameraName = "FrontLeftCamera";
+    private int visionlostcount = 0;
+    public boolean visionlost = false;
 
-    
     private final Transform3d robotToCamera = new Transform3d(new Translation3d(0.38, -0.07, 0.45), new Rotation3d(0, Units.degreesToRadians(0), 0));
 
     // Optional: keep latest raw vision pose for dashboard
@@ -49,6 +50,17 @@ public class VisionSubsystem extends SubsystemBase {
     }
 
     public Optional<VisionMeasurement> getMeasurement(Pose2d referencePose) {
+        if (!camera.isConnected()) {
+            visionlostcount++;
+
+            if (visionlostcount >= 30) {
+                visionlost = true;
+            }
+        }
+        else {
+            visionlostcount = 0;
+            visionlost = false;
+        }
         poseEstimator.setReferencePose(referencePose);
         PhotonPipelineResult result = camera.getLatestResult();
         Optional<EstimatedRobotPose> estimate = poseEstimator.update(result);
