@@ -31,11 +31,11 @@ public class Intake extends SubsystemBase{
     }
 
     public Command run() {
-        return this.runOnce(() -> IntakeMotor.setVoltage(7.0));
+        return this.runOnce(() -> IntakeMotor.setVoltage(8.0));
     }
 
     public Command dump() {
-        return this.run(() -> IntakeMotor.setVoltage(-6.0))
+        return this.run(() -> IntakeMotor.setVoltage(-8.0))
                    .finallyDo(() -> IntakeMotor.stopMotor());
     }
 
