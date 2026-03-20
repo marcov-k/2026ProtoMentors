@@ -81,6 +81,7 @@ public class AimAtTargetCommand extends Command {
         // Calculate distance, lookup voltage, and set voltage 
         double distance = toTarget.getNorm();
         double voltage = lookupVoltage(distance);
+        
         launcher.setTargetVoltage(voltage);
 
         // Lookup Time of Flight 
@@ -139,7 +140,7 @@ public class AimAtTargetCommand extends Command {
 
     // Lookup Tables by Distance:
     private static final double[] Distance = { 6, 8, 18 };
-    private static final double[] Voltage = { 5.35, 5.4, 7};
+    private static final double[] Voltage = { 5.3, 5.37, 7};
     private static final double[] TimeOfFlight = {0.4, 0.6, 0.8};
 
     public static double lookupVoltage(double meters) {
